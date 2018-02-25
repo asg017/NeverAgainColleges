@@ -26,6 +26,7 @@
 <script src="js/semantic.min.js"></script>
 <script src="js/handlebars.min.js"></script>
 <script src="js/mark.min.js"></script>
+<script src="js/clipboard.min.js"></script>
 
 <style>
   mark {
@@ -43,7 +44,7 @@
     Call on {{ college.name }} to take action.
   </div>
   <div class="image content">
-    <div class="ui medium image">
+    <div class="ui small image">
       <img src="{{ college.photo }}">
     </div>
     <div class="description">
@@ -58,25 +59,25 @@
               <label>I am a...</label>
               <div class="field">
                 <div class="ui radio checkbox">
-                  <input type="radio" name="a">
+                  <input type="radio" name="a" value="current">
                   <label>Current Applicant</label>
                 </div>
               </div>
               <div class="field">
                 <div class="ui radio checkbox">
-                  <input type="radio" name="a">
+                  <input type="radio" name="a" value="prospective">
                   <label>Prospective Applicant</label>
                 </div>
               </div>
               <div class="field">
                 <div class="ui radio checkbox">
-                  <input type="radio" name="a">
+                  <input type="radio" name="a" value="student">
                   <label>Current Student</label>
                 </div>
               </div>
               <div class="field">
                 <div class="ui radio checkbox">
-                  <input type="radio" name="a">
+                  <input type="radio" name="a" value="community">
                   <label>Member of the Community</label>
                 </div>
               </div>
@@ -85,7 +86,10 @@
         </div>
         
         <div class="eight wide column">
-          <div class="ui segment"></div>
+          <div class="ui segment">
+            <p id="modal-message"></p>
+            <div style="cursor:pointer;" class="ui bottom right attached label clipboard" data-clipboard-target='#modal-message'>Copy</div>
+          </div>
         </div>
         
       </div>
@@ -95,11 +99,8 @@
     </div>
   </div>
   <div class="actions">
-    <div class="ui black deny button">
-      Nope
-    </div>
     <div class="ui positive right labeled icon button">
-      Yep, that's me
+      Complete
       <i class="checkmark icon"></i>
     </div>
   </div>
@@ -131,23 +132,22 @@
       <div class="extra">
           {{#if confirm }}
           <div class="ui right floated left labeled positive button" tabindex="0">
-            <a href="{{ confirm.link }}" class="ui basic label">
+            <a href="{{ confirm.link }}" target="_blank" class="ui basic label">
               Confirmed Statement
             </a>
-            <a href="{{ confirm.link }}" class="ui positive icon button">
+            <a href="{{ confirm.link }}" target="_blank" class="ui positive icon button">
               <i class="check circle icon"></i>
             </a>
           </div>
-          <!--
-            <div class="ui labeled right floated positive button">
-              Confirmed Statement
-              <i class="check circle icon"></i>
-            </div> -->
           {{else}}
-            <div onClick="callModal('{{id}}')" class="ui right floated negative button" data-tooltip="Call on {{ alias.[0] }} to put out a statement to protect peaceful protesters.">
-              Call for Action
-              <i class="check circle icon"></i>
-            </div>  
+          <div onClick="callModal('{{id}}')" class="ui right floated left labeled negative button" tabindex="0" data-tooltip="Call on {{ alias.[0] }} to put out a statement to protect peaceful protesters.">
+            <div class="ui red label">
+              Call on {{ alias.[0] }} to take Action
+            </div>
+            <div class="ui negative icon button">
+              <i class="bullhorn icon"></i>
+            </div>
+          </div>
           {{/if}}
           
       </div>
@@ -166,10 +166,38 @@
   var rend = Mustache.render(tmp, {});
   $('#target').html(rend);
   */
+  var x;
   function changeMessage(id) {
     
     //$('#modal-form-' + id).form()
   }
+  
+  
+  var callParts = {
+    'salutation': {
+      'default': 'Hello! ',
+      'tweet': 'Hey @{{ twitterHandle }}! ',
+    },
+    
+    'introduction': {
+      'current': 'I am a 2018 applicant at {{schoolName}}, and I am worried about potential reprecussions on my potential admittance to {{schoolName}} if I participate in #NeverAgain demonstration against gun violence. ',
+      'prospective': 'I am a prospective applicant {{schoolName}} and I am worried about potential reprecussions on my potential admittance to {{schoolName}} if I participate in #NeverAgain demonstration against gun violence. ',
+      'student': 'I am a current student at {{schoolName}}, and I am worried that applicants to my university may face reprecussions for participating in #NeverAgain demonstrations against gun violence. ',
+      'community':'I am a member of the {{schoolName}} community, and I am worried that applicants to our university may face reprecussions for participating in #NeverAgain demonstrations against gun violence. '
+    },
+    
+    'purpose': {
+      'default': 'I urge you to put out a statement in support of #NeverAgain peaceful demonstrators to protect our future student\'s first amendment rights. '
+    },
+    
+    'examples': {
+      'default': 'To see what other universities have put out statements, check out NeverAgainColleges.com . ',
+    },
+    
+    'signoff': {
+      'default': 'Thank you so much! #NeverAgain #NAColleges',
+    }
+  };
   function callModal(schoolId) {
     
     var college;
@@ -189,8 +217,22 @@
     
     $('#call-modal-' + schoolId ).modal('show');
     $('.ui.checkbox').checkbox({
-      onChecked: function(a) {
-        console.log($(this))
+      onChecked: function() {
+        
+        var val = $(this)[0].value;
+        var name = college.name;
+        var msg = '';
+        
+        msg += callParts['salutation']['default'];
+        msg += callParts['introduction'][val];
+        msg += callParts['purpose']['default'];
+        msg += callParts['examples']['default'];
+        msg += callParts['signoff']['default'];
+        
+        var template = Handlebars.compile(msg);
+        var rendered = template({'schoolName': college.name, 'twitterHandle':''});
+        new Clipboard('.clipboard');
+        $('#modal-message').text(rendered);
       }
     });
     
@@ -320,11 +362,18 @@
           colleges = c;
           colleges = colleges.sort(function(a,b) {
             
-            //Photos
-            if(a.photo && b.photo) return a.photo-b.photo;
-            if(!a.photo) return 1;
-            if(!b.photo) return -1;
+            if(a.confirm && b.confirm) {
+              //Photos
+              if(a.photo && b.photo) return 0.5 - Math.random();
+              if(!a.photo) return 1;
+              if(!b.photo) return -1;
+            }
             
+            if(!a.confirm)
+              return 0.25 - Math.random();
+            else
+              return 0.75 - Math.random();
+              
             return 0.5 - Math.random();
           }).filter(function(col){
             return col !== undefined;
