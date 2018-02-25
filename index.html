@@ -16,7 +16,9 @@
 
 <link rel="shortcut icon" type="image/png" href="neveragain.ico"/>
 
-<link rel="stylesheet" type="text/css" href="css/semantic.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.css" integrity="sha256-/mC8AIsSmTcTtaf8vgnfbZXZLYhJCd0b9If/M0Y5nDw=" crossorigin="anonymous" />
+
+<!--<link rel="stylesheet" type="text/css" href="css/semantic.min.css">-->
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
@@ -38,16 +40,58 @@
 <div id="call-modal-{{ college.id }}" class="ui modal">
   <i class="close icon"></i>
   <div class="header">
-    Call on {{ college.name }} to xxxxxx.
+    Call on {{ college.name }} to take action.
   </div>
   <div class="image content">
     <div class="ui medium image">
       <img src="{{ college.photo }}">
     </div>
     <div class="description">
-      <div class="ui header">We've auto-chosen a profile image for you.</div>
-      <p>We've grabbed the following image from the <a href="https://www.gravatar.com" target="_blank">gravatar</a> image associated with your registered e-mail address.</p>
-      <p>Is it okay to use this photo?</p>
+      <div class="ui header">Send a message to {{ college.alias.[0] }} to put out an official statement support #NeverAgain protesters.</div>
+      <div class="ui subheader">We will do the hard work for you.</div>
+      <br>
+      
+      <div class="ui grid">
+        <div class="eight wide column">
+          <div id="modal-form-{{college.id}}" onClick="changeMessage('{{college.id}}')" class="ui form">
+            <div class="grouped fields">
+              <label>I am a...</label>
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" name="a">
+                  <label>Current Applicant</label>
+                </div>
+              </div>
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" name="a">
+                  <label>Prospective Applicant</label>
+                </div>
+              </div>
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" name="a">
+                  <label>Current Student</label>
+                </div>
+              </div>
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" name="a">
+                  <label>Member of the Community</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="eight wide column">
+          <div class="ui segment"></div>
+        </div>
+        
+      </div>
+      
+      
+      
     </div>
   </div>
   <div class="actions">
@@ -71,10 +115,12 @@
     </div>
     <div class="content">
       <div class="header">{{ name }}</div>
+      <!--
       <div class="meta">
         <span class="price">{{ size }}</span>
         <span class="stay">1 {{ city }}, {{ state }}</span>
       </div>
+      -->
       
       <div class="description">
         {{#alias}}
@@ -103,9 +149,7 @@
               <i class="check circle icon"></i>
             </div>  
           {{/if}}
-          <div class="ui label">UC System</div>
-          <div class="ui label">Ivy League</div>
-        
+          
       </div>
       
       
@@ -122,11 +166,13 @@
   var rend = Mustache.render(tmp, {});
   $('#target').html(rend);
   */
-  
+  function changeMessage(id) {
+    
+    //$('#modal-form-' + id).form()
+  }
   function callModal(schoolId) {
     
     var college;
-    console.log(colleges_global)
     for(var i = 0; i < colleges_global.length; i++) {
       if(colleges_global[i].id === schoolId) {
         college = colleges_global[i];
@@ -137,12 +183,17 @@
     if (college === undefined) {
       alert('uh oh')
     }
-    console.log(college)
     var modalTemplate = Handlebars.compile($('#call-modal-template').html());
     var rendered = modalTemplate({'college':college});
     $('body').append(rendered);
     
     $('#call-modal-' + schoolId ).modal('show');
+    $('.ui.checkbox').checkbox({
+      onChecked: function(a) {
+        console.log($(this))
+      }
+    });
+    
   }
   var colleges_columns = {
     "1":'id', 
@@ -299,6 +350,7 @@
 
 <body>
   <div class="ui grid">
+    <div class="ui row"></div>
   </div>
   <div class="ui grid">
     <div class="one wide column">
@@ -315,8 +367,8 @@
         </div>
         <div class="five wide column">
           <div class="ui two item menu">
-            <a class="item">About</a>
-            <a class="item">Press</a>
+            <a href="about.html" class="item">About</a>
+            <!--<a class="item">Press</a>-->
           </div>
         </div>
       </div>
@@ -376,7 +428,8 @@ gtag('config', 'UA-114686953-1');
 </script>
 <script>
 
-  
+    
+    
     var collegeListInput = $('#college-list-input');
     var collegeListContext = $('.college-list-item');
     
