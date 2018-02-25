@@ -1,0 +1,384 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Admission Offices for US universities pledged to protect the #NeverAgain movement">
+<meta name="author" content="Alex Garcia">
+<title>#NeverAgain Colleges</title>
+
+
+<link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+<script src="semantic/dist/semantic.min.js"></script>
+<script src="handlebars/dist/handlebars.min.js"></script>
+<script src="mark/dist/mark.min.js"></script>
+
+<style>
+  mark {
+  background: orange;
+  color: inherit;
+  padding: 0;
+}
+</style>
+
+<script id="call-modal-template" type="text/x-handlebars-template">
+
+<div id="call-modal-{{ college.id }}" class="ui modal">
+  <i class="close icon"></i>
+  <div class="header">
+    Call on {{ college.name }} to xxxxxx.
+  </div>
+  <div class="image content">
+    <div class="ui medium image">
+      <img src="{{ college.photo }}">
+    </div>
+    <div class="description">
+      <div class="ui header">We've auto-chosen a profile image for you.</div>
+      <p>We've grabbed the following image from the <a href="https://www.gravatar.com" target="_blank">gravatar</a> image associated with your registered e-mail address.</p>
+      <p>Is it okay to use this photo?</p>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui black deny button">
+      Nope
+    </div>
+    <div class="ui positive right labeled icon button">
+      Yep, that's me
+      <i class="checkmark icon"></i>
+    </div>
+  </div>
+</div>
+</script>
+
+<script id="college-list-template" type="text/x-handlebars-template">
+
+{{#colleges}}
+  <div id="{{alias.[0]}}-item" class="college-list-item item">
+    <div class="ui tiny image">
+      <img src="{{#if photo }}{{photo}}{{else}}http://via.placeholder.com/150x150{{/if}}">
+    </div>
+    <div class="content">
+      <div class="header">{{ name }}</div>
+      <div class="meta">
+        <span class="price">{{ size }}</span>
+        <span class="stay">1 {{ city }}, {{ state }}</span>
+      </div>
+      
+      <div class="description">
+        {{#alias}}
+          <span style="display:none;">{{ this }}</span>
+        {{/alias}}
+      </div>
+      
+      <div class="extra">
+          {{#if confirm }}
+          <div class="ui right floated left labeled positive button" tabindex="0">
+            <a href="{{ confirm.link }}" class="ui basic label">
+              Confirmed Statement
+            </a>
+            <a href="{{ confirm.link }}" class="ui positive icon button">
+              <i class="check circle icon"></i>
+            </a>
+          </div>
+          <!--
+            <div class="ui labeled right floated positive button">
+              Confirmed Statement
+              <i class="check circle icon"></i>
+            </div> -->
+          {{else}}
+            <div onClick="callModal('{{id}}')" class="ui right floated negative button" data-tooltip="Call on {{ alias.[0] }} to put out a statement to protect peaceful protesters.">
+              Call for Action
+              <i class="check circle icon"></i>
+            </div>  
+          {{/if}}
+          <div class="ui label">UC System</div>
+          <div class="ui label">Ivy League</div>
+        
+      </div>
+      
+      
+    </div>
+  </div>
+{{/colleges}}
+</script>
+
+<script>
+/*
+  var tmp = $('#college-list-template');  
+  Mustache.parse(tmp);
+  
+  var rend = Mustache.render(tmp, {});
+  $('#target').html(rend);
+  */
+  
+  function callModal(schoolId) {
+    
+    var college;
+    console.log(colleges_global)
+    for(var i = 0; i < colleges_global.length; i++) {
+      if(colleges_global[i].id === schoolId) {
+        college = colleges_global[i];
+        break;
+      }
+    }
+    
+    if (college === undefined) {
+      alert('uh oh')
+    }
+    console.log(college)
+    var modalTemplate = Handlebars.compile($('#call-modal-template').html());
+    var rendered = modalTemplate({'college':college});
+    $('body').append(rendered);
+    
+    $('#call-modal-' + schoolId ).modal('show');
+  }
+  var colleges_columns = {
+    "1":'id', 
+    "2":'name', 
+    "3":'city',
+    "4":'state',
+    "5":'size', 
+    "6":'alias',
+    "7":'location',
+    "8":'photo',
+    "9":'twitter',
+    "10":'email',
+    
+  };
+  var confirm_columns = {"1":'id', "2":'link', "3":'tweet',"4":'date'};
+  
+  function getCollegeList(cb) {
+    
+    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/1/public/values?range=a2:j150&alt=json';
+    var d;
+    
+    $.get(url, function(err, status, data) {
+      var entries = data.responseJSON.feed.entry;
+      var colleges = {};
+
+      for(var i = 0; i < entries.length; i++){
+      	var e_row = entries[i].gs$cell.row;
+      	var e_col = entries[i].gs$cell.col;
+      	if(!colleges[e_row]) {
+      		colleges[e_row] = {};
+          }
+      	colleges[e_row][colleges_columns[e_col]] = entries[i].gs$cell.$t;
+      }
+      
+      var c = {};
+      
+      for(var col in colleges) {
+        c[colleges[col].id] = colleges[col];
+      }
+      //colleges = c;
+      colleges = cleanColleges(c);
+      cb(null, c);
+    });
+    
+    
+  }
+  
+  function cleanColleges(cols) {
+    
+          
+    for(var c in cols) {
+      var col = cols[c];
+      
+      col.alias = (col.alias) ? col.alias.split(',') : undefined;
+      
+      if(!col.name)
+        col = undefined;
+      cols[c] = col;
+    }
+    
+    return cols;  
+  }
+  
+  function getConfirmList(cb) {
+    
+    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/2/public/values?range=a2:e150&alt=json';
+    var d;
+    
+    $.get(url, function(err, status, data) {
+      var entries = data.responseJSON.feed.entry;
+      var confirms = {};
+
+      for(var i = 0; i < entries.length; i++){
+      	var e_row = entries[i].gs$cell.row;
+      	var e_col = entries[i].gs$cell.col;
+      	if(!confirms[e_row]) {
+      		confirms[e_row] = {};
+          }
+      	confirms[e_row][confirm_columns[e_col]] = entries[i].gs$cell.$t;
+      }
+      
+      var c = {};
+      
+      for(var con in confirms) {
+        //c.push(confirms[con]);
+        c[confirms[con].id] = confirms[con];
+        
+      }
+      //confirms = c;
+      
+      cb(null, c);
+    });
+    
+    
+  }
+  
+  var colleges_global;
+  
+  getCollegeList( function(err, colleges) {
+    if(err) {
+        
+      return;  
+    }
+    else {
+      
+      getConfirmList( function(err, confirms) {
+        if(err) {
+            
+          return;  
+        }
+        else {
+          
+          for(var c in confirms) {
+            
+            if(colleges[confirms[c].id])
+              colleges[confirms[c].id].confirm = confirms[c];
+          }
+          
+          c = [];
+          for(var col in colleges) {
+            c.push(colleges[col]);
+          }
+          
+          colleges = c;
+          colleges = colleges.sort(function(a,b) {
+            
+            //Photos
+            if(a.photo && b.photo) return a.photo-b.photo;
+            if(!a.photo) return 1;
+            if(!b.photo) return -1;
+            
+            return 0.5 - Math.random();
+          }).filter(function(col){
+            return col !== undefined;
+          });
+          
+          colleges_global = colleges;
+          
+          $('#college-list-loader').remove();
+          
+          var colListItemTemplate = Handlebars.compile($('#college-list-template').html());
+          var rendered = colListItemTemplate({'colleges':colleges});
+          $('#college-list-items').html(rendered);
+        }
+          
+      });
+    }
+      
+  });
+  
+      
+</script>
+</head>
+
+<body>
+  
+  <div class="ui grid">
+    <div class="one wide column">
+      
+    </div>
+    <div class="fourteen wide column">
+      
+      <div class="ui stackable grid">
+        <div class="eleven wide column">
+          <h1 class="ui header">
+            #NeverAgain Colleges
+            <div class="sub header">US Colleges that are committed to defend the #NeverAgain Movement.</div>
+          </h1>
+        </div>
+        <div class="five wide column">
+          <div class="ui two item menu">
+            <a class="item">About</a>
+            <a class="item">Press</a>
+          </div>
+        </div>
+      </div>
+      
+      
+      <div class="ui stackable grid">
+        
+        <!-- College lookup -->
+        <div class="ten wide column">
+          
+          <div class="ui segment">
+            
+            <div id="college-list-loader" class="ui inverted active dimmer">
+              <div class="ui text loader">Loading Universities...</div>
+            </div>
+  
+            <!-- search -->
+            <div class="ui massive right aligned category search">
+              <div class="ui icon input">
+                <input id="college-list-input" class="prompt" type="text" placeholder="Search universities...">
+                <i class="search icon"></i>
+              </div>
+            </div>
+            
+            <div id="college-list-items" class="ui divided items">
+            </div>
+            
+          </div>
+          
+        </div>
+        
+        <!-- Map + others -->
+        <div class="six wide column">
+          
+          
+        </div>
+      </div>
+            
+    </div>
+    <div class="one wide column">
+      
+    </div>
+  </div>
+
+  
+    
+</body>
+
+<script>
+  
+  
+    var collegeListInput = $('#college-list-input');
+    var collegeListContext = $('.college-list-item');
+    
+    collegeListInput.on('input', function() {
+      var collegeListContext = $('.college-list-item');
+      var term = $(this).val();
+      collegeListContext.show().unmark();
+      if (term) {
+        collegeListContext.mark(term, {
+          done: function() {
+            collegeListContext.not(":has(mark)").hide();
+          },debug:true
+        });
+      }
+    });
+  
+  
+</script>
+  
+</html>
