@@ -41,15 +41,15 @@
 <div id="call-modal-{{ college.id }}" class="ui modal">
   <i class="close icon"></i>
   <div class="header">
-    Call on {{ college.name }} to take action.
+    Call on {{ college.name }} to publically support #NeverAgain demonstrators.
   </div>
   <div class="image content">
     <div class="ui small image">
       <img src="{{ college.photo }}">
     </div>
     <div class="description">
-      <div class="ui header">Send a message to {{ college.alias.[0] }} to put out an official statement support #NeverAgain protesters.</div>
-      <div class="ui subheader">We will do the hard work for you.</div>
+      <div class="ui header">Fill out your info below to generate a mesage to send to {{ college.alias.[0] }}!</div>
+      <div class="ui subheader">NeverAgainColleges.com will not collect any information from you - <a href='about.html'>Privacy Policy</a></div>
       <br>
       
       <div class="ui grid">
@@ -77,17 +77,30 @@
               </div>
               <div class="field">
                 <div class="ui radio checkbox">
+                  <input type="radio" name="a" value="alumni">
+                  <label>Alumni of the University</label>
+                </div>
+              </div>
+              <div class="field">
+                <div class="ui radio checkbox">
                   <input type="radio" name="a" value="community">
                   <label>Member of the Community</label>
                 </div>
               </div>
             </div>
           </div>
+          
+          {{#if college.twitter }}
+          <div class="segment">
+            <p>Tweet <a target="_blank" href="https://www.twitter.com/{{ college.twitter }}">@{{ college.twitter }} <i class="ui twitter square icon"></i></a></p>
+          </div>
+          
+          {{/if}}
         </div>
         
         <div class="eight wide column">
           <div class="ui segment">
-            <p id="modal-message"></p>
+            <p id="modal-message"><i class="ui hand point left outline icon"></i> ( Generated message will appear hear, fill out information to the left )</p>
             <div style="cursor:pointer;" class="ui bottom right attached label clipboard" data-clipboard-target='#modal-message'>Copy</div>
           </div>
         </div>
@@ -183,6 +196,7 @@
       'current': 'I am a 2018 applicant at {{schoolName}}, and I am worried about potential reprecussions on my potential admittance to {{schoolName}} if I participate in #NeverAgain demonstration against gun violence. ',
       'prospective': 'I am a prospective applicant {{schoolName}} and I am worried about potential reprecussions on my potential admittance to {{schoolName}} if I participate in #NeverAgain demonstration against gun violence. ',
       'student': 'I am a current student at {{schoolName}}, and I am worried that applicants to my university may face reprecussions for participating in #NeverAgain demonstrations against gun violence. ',
+      'alumni':'I am an alumnus of the {{schoolName}}, and I am worried that applicants to my university may face reprecussions for participating in #NeverAgain demonstrations against gun violence. ',
       'community':'I am a member of the {{schoolName}} community, and I am worried that applicants to our university may face reprecussions for participating in #NeverAgain demonstrations against gun violence. '
     },
     
