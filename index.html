@@ -213,7 +213,8 @@
     }
   };
   function callModal(schoolId) {
-    
+    ga('send', 'event', 'call', 'click', 'call_to_action', schoolId);
+
     var college;
     for(var i = 0; i < colleges_global.length; i++) {
       if(colleges_global[i].id === schoolId) {
