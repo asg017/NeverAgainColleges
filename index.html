@@ -143,12 +143,12 @@
       </div>
       
       <div class="extra">
-          {{#if confirm }}
+          {{#if hasConfirm }}
           <div class="ui right floated left labeled positive button" tabindex="0">
-            <a href="{{ confirm.link }}" target="_blank" class="ui basic label">
+            <a href="{{ link }}" target="_blank" class="ui basic label">
               Confirmed Statement
             </a>
-            <a href="{{ confirm.link }}" target="_blank" class="ui positive icon button">
+            <a href="{{ link }}" target="_blank" class="ui positive icon button">
               <i class="check circle icon"></i>
             </a>
           </div>
@@ -228,7 +228,11 @@
     var modalTemplate = Handlebars.compile($('#call-modal-template').html());
     var rendered = modalTemplate({'college':college});
     $('body').append(rendered);
-    
+    $('#call-modal-' + schoolId ).modal({
+      'onHidden':function(a) {
+        $('#call-modal-' + schoolId).remove();
+      },
+    });
     $('#call-modal-' + schoolId ).modal('show');
     $('.ui.checkbox').checkbox({
       onChecked: function() {
@@ -262,13 +266,17 @@
     "8":'photo',
     "9":'twitter',
     "10":'email',
+    "11":'hasConfirm',
+    "12":'link',
+    "13":'tweet',
+    "14":'date',
     
   };
   var confirm_columns = {"1":'id', "2":'link', "3":'tweet',"4":'date'};
   
   function getCollegeList(cb) {
     
-    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/1/public/values?range=a2:j150&alt=json';
+    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:N200&alt=json';
     var d;
     
     $.get(url, function(err, status, data) {
@@ -304,9 +312,11 @@
       var col = cols[c];
       
       col.alias = (col.alias) ? col.alias.split(',') : undefined;
+      col.hasConfirm = col.hasConfirm === 'TRUE';
       
       if(!col.name)
         col = undefined;
+      
       cols[c] = col;
     }
     
@@ -355,54 +365,42 @@
     }
     else {
       
-      getConfirmList( function(err, confirms) {
-        if(err) {
-            
-          return;  
+      
+      c = [];
+      for(var col in colleges) {
+        c.push(colleges[col]);
+      }
+      
+      colleges = c;
+      colleges = colleges.sort(function(a,b) {
+        
+        if(a.hasConfirm && b.hasConfirm) {
+          //Photos
+          if(a.photo && b.photo) return 0.5 - Math.random();
+          if(!a.photo) return 1;
+          if(!b.photo) return -1;
         }
-        else {
+        
+        if(!a.hasConfirm)
+          return 0.25 - Math.random();
+        else
+          return 0.75 - Math.random();
           
-          for(var c in confirms) {
-            
-            if(colleges[confirms[c].id])
-              colleges[confirms[c].id].confirm = confirms[c];
-          }
-          
-          c = [];
-          for(var col in colleges) {
-            c.push(colleges[col]);
-          }
-          
-          colleges = c;
-          colleges = colleges.sort(function(a,b) {
-            
-            if(a.confirm && b.confirm) {
-              //Photos
-              if(a.photo && b.photo) return 0.5 - Math.random();
-              if(!a.photo) return 1;
-              if(!b.photo) return -1;
-            }
-            
-            if(!a.confirm)
-              return 0.25 - Math.random();
-            else
-              return 0.75 - Math.random();
-              
-            return 0.5 - Math.random();
-          }).filter(function(col){
-            return col !== undefined;
-          });
-          
-          colleges_global = colleges;
-          
-          $('#college-list-loader').remove();
-          
-          var colListItemTemplate = Handlebars.compile($('#college-list-template').html());
-          var rendered = colListItemTemplate({'colleges':colleges});
-          $('#college-list-items').html(rendered);
-        }
-          
+        return 0.5 - Math.random();
+      }).filter(function(col){
+        return col !== undefined;
       });
+      
+      colleges_global = colleges;
+      
+      $('#college-list-loader').remove();
+      
+      console.log(colleges);
+      var colListItemTemplate = Handlebars.compile($('#college-list-template').html());
+      var rendered = colListItemTemplate({'colleges':colleges});
+      $('#college-list-items').html(rendered);
+    
+      
     }
       
   });
