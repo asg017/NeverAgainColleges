@@ -51,7 +51,7 @@
       <div class="ui header">Fill out your info below to generate a mesage to send to {{ college.alias.[0] }}!</div>
       <div class="ui subheader">NeverAgainColleges.com will not collect any information from you - <a href='about.html'>Privacy Policy</a></div>
       <br>
-      
+
       <div class="ui grid">
         <div class="eight wide column">
           <div id="modal-form-{{college.id}}" onClick="changeMessage('{{college.id}}')" class="ui form">
@@ -89,26 +89,28 @@
               </div>
             </div>
           </div>
-          
+
           {{#if college.twitter }}
           <div class="segment">
-            <p>Tweet <a target="_blank" href="https://www.twitter.com/{{ college.twitter }}">@{{ college.twitter }} <i class="ui twitter square icon"></i></a></p>
+            <p>
+            <a target="_blank" id="tweet-link" href="https://twitter.com/intent/tweet?text=@{{ college.twitter}}">Tweet @{{ college.twitter }}<i class="ui twitter square icon"></i></a>
+            </p>
           </div>
-          
+
           {{/if}}
         </div>
-        
+
         <div class="eight wide column">
           <div class="ui segment">
             <p id="modal-message"><i class="ui hand point left outline icon"></i> ( Generated message will appear hear, fill out information to the left )</p>
             <div style="cursor:pointer;" class="ui bottom right attached label clipboard" data-clipboard-target='#modal-message'>Copy</div>
           </div>
         </div>
-        
+
       </div>
-      
-      
-      
+
+
+
     </div>
   </div>
   <div class="actions">
@@ -135,13 +137,13 @@
         <span class="stay">1 {{ city }}, {{ state }}</span>
       </div>
       -->
-      
+
       <div class="description">
         {{#alias}}
           <span style="display:none;">{{ this }}</span>
         {{/alias}}
       </div>
-      
+
       <div class="extra">
           {{#if hasConfirm }}
           <div class="ui right floated left labeled positive button" tabindex="0">
@@ -162,10 +164,10 @@
             </div>
           </div>
           {{/if}}
-          
+
       </div>
-      
-      
+
+
     </div>
   </div>
 {{/colleges}}
@@ -173,45 +175,56 @@
 
 <script>
 /*
-  var tmp = $('#college-list-template');  
+  var tmp = $('#college-list-template');
   Mustache.parse(tmp);
-  
+
   var rend = Mustache.render(tmp, {});
   $('#target').html(rend);
   */
   var x;
   function changeMessage(id) {
-    
+
     //$('#modal-form-' + id).form()
   }
-  
-  
+
+
   var callParts = {
     'salutation': {
       'default': 'Hello! ',
       'tweet': 'Hey @{{ twitterHandle }}! ',
     },
-    
+
     'introduction': {
-      'current': 'I am a 2018 applicant at {{schoolName}}, and I am worried about potential reprecussions on my potential admittance to {{schoolName}} if I participate in #NeverAgain demonstration against gun violence. ',
-      'prospective': 'I am a prospective applicant {{schoolName}} and I am worried about potential reprecussions on my potential admittance to {{schoolName}} if I participate in #NeverAgain demonstration against gun violence. ',
-      'student': 'I am a current student at {{schoolName}}, and I am worried that applicants to my university may face reprecussions for participating in #NeverAgain demonstrations against gun violence. ',
-      'alumni':'I am an alumnus of the {{schoolName}}, and I am worried that applicants to my university may face reprecussions for participating in #NeverAgain demonstrations against gun violence. ',
-      'community':'I am a member of the {{schoolName}} community, and I am worried that applicants to our university may face reprecussions for participating in #NeverAgain demonstrations against gun violence. '
+      'current': 'I am a 2018 applicant at {{schoolName}}, and I am worried about potential repercussions on my potential admittance to {{schoolName}} if I participate in #NeverAgain demonstration against gun violence. ',
+      'prospective': 'I am a prospective applicant {{schoolName}} and I am worried about potential repercussions on my potential admittance to {{schoolName}} if I participate in #NeverAgain demonstration against gun violence. ',
+      'student': 'I am a current student at {{schoolName}}, and I am worried that applicants to my university may face repercussions for participating in #NeverAgain demonstrations against gun violence. ',
+      'alumni':'I am an alumnus of the {{schoolName}}, and I am worried that applicants to my university may face repercussions for participating in #NeverAgain demonstrations against gun violence. ',
+      'community':'I am a member of the {{schoolName}} community, and I am worried that applicants to our university may face repercussions for participating in #NeverAgain demonstrations against gun violence. '
     },
-    
+
     'purpose': {
       'default': 'I urge you to put out a statement in support of #NeverAgain peaceful demonstrators to protect our future student\'s first amendment rights. '
     },
-    
+
     'examples': {
       'default': 'To see what other universities have put out statements, check out NeverAgainColleges.com . ',
     },
-    
+
     'signoff': {
       'default': 'Thank you so much! #NeverAgain #NAColleges',
     }
   };
+
+  var tweetTemplates = {
+    'current': '@{{ twitterHandle }} Hello! I am an applicant at {{ schoolName }}.',
+    'prospective': '@{{ twitterHandle }} Hello! I am a prospective applicant at {{ schoolName }}.',
+    'student': '@{{ twitterHandle }} Hello! I am a student at {{ schoolName }}.',
+    'alumni': '@{{ twitterHandle }} Hello! I am an alum of {{ schoolName }}.',
+    'community': '@{{ twitterHandle }} Hello! I am in the {{ schoolName }} community.',
+  }
+
+  var tweetSuffix = 'I urge you to put out a statement in support of #NeverAgain peaceful demonstrators to protect our future students\' first amendment rights like the other schools at neveragaincolleges.com.'
+
   function callModal(schoolId) {
     ga('send', 'event', 'call', 'click', 'call_to_action', schoolId);
 
@@ -222,7 +235,7 @@
         break;
       }
     }
-    
+
     if (college === undefined) {
       alert('uh oh')
     }
@@ -237,31 +250,40 @@
     $('#call-modal-' + schoolId ).modal('show');
     $('.ui.checkbox').checkbox({
       onChecked: function() {
-        
+
         var val = $(this)[0].value;
         var name = college.name;
         var msg = '';
-        
+
         msg += callParts['salutation']['default'];
         msg += callParts['introduction'][val];
         msg += callParts['purpose']['default'];
         msg += callParts['examples']['default'];
         msg += callParts['signoff']['default'];
-        
+
         var template = Handlebars.compile(msg);
+        var tweetTemplate = Handlebars.compile(tweetTemplates[val]);
         var rendered = template({'schoolName': college.name, 'twitterHandle':''});
         new Clipboard('.clipboard');
         $('#modal-message').text(rendered);
+        $('#tweet-link').attr(
+          'href',
+          'https://twitter.com/intent/tweet?text=' + encodeURIComponent(
+             tweetTemplate(
+               {'schoolName': college.name, 'twitterHandle': college.twitter}
+             ) + ' ' + tweetSuffix
+          )
+        );
       }
     });
-    
+
   }
   var colleges_columns = {
-    "1":'id', 
-    "2":'name', 
+    "1":'id',
+    "2":'name',
     "3":'city',
     "4":'state',
-    "5":'size', 
+    "5":'size',
     "6":'alias',
     "7":'location',
     "8":'photo',
@@ -271,15 +293,15 @@
     "12":'link',
     "13":'tweet',
     "14":'date',
-    
+
   };
   var confirm_columns = {"1":'id', "2":'link', "3":'tweet',"4":'date'};
-  
+
   function getCollegeList(cb) {
-    
+
     var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:N200&alt=json';
     var d;
-    
+
     $.get(url, function(err, status, data) {
       var entries = data.responseJSON.feed.entry;
       var colleges = {};
@@ -292,9 +314,9 @@
           }
       	colleges[e_row][colleges_columns[e_col]] = entries[i].gs$cell.$t;
       }
-      
+
       var c = {};
-      
+
       for(var col in colleges) {
         c[colleges[col].id] = colleges[col];
       }
@@ -302,33 +324,33 @@
       colleges = cleanColleges(c);
       cb(null, c);
     });
-    
-    
+
+
   }
-  
+
   function cleanColleges(cols) {
-    
-          
+
+
     for(var c in cols) {
       var col = cols[c];
-      
+
       col.alias = (col.alias) ? col.alias.split(',') : undefined;
       col.hasConfirm = col.hasConfirm === 'TRUE';
-      
+
       if(!col.name)
         col = undefined;
-      
+
       cols[c] = col;
     }
-    
-    return cols;  
+
+    return cols;
   }
-  
+
   function getConfirmList(cb) {
-    
+
     var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/2/public/values?range=a2:e150&alt=json';
     var d;
-    
+
     $.get(url, function(err, status, data) {
       var entries = data.responseJSON.feed.entry;
       var confirms = {};
@@ -341,72 +363,72 @@
           }
       	confirms[e_row][confirm_columns[e_col]] = entries[i].gs$cell.$t;
       }
-      
+
       var c = {};
-      
+
       for(var con in confirms) {
         //c.push(confirms[con]);
         c[confirms[con].id] = confirms[con];
-        
+
       }
       //confirms = c;
-      
+
       cb(null, c);
     });
-    
-    
+
+
   }
-  
+
   var colleges_global;
-  
+
   getCollegeList( function(err, colleges) {
     if(err) {
-        
-      return;  
+
+      return;
     }
     else {
-      
-      
+
+
       c = [];
       for(var col in colleges) {
         c.push(colleges[col]);
       }
-      
+
       colleges = c;
       colleges = colleges.sort(function(a,b) {
-        
+
         if(a.hasConfirm && b.hasConfirm) {
           //Photos
           if(a.photo && b.photo) return 0.5 - Math.random();
           if(!a.photo) return 1;
           if(!b.photo) return -1;
         }
-        
+
         if(!a.hasConfirm)
           return 0.45 - Math.random();
         else
           return 0.55 - Math.random();
-          
+
         return 0.5 - Math.random();
       }).filter(function(col){
         return col !== undefined;
       });
-      
+
       colleges_global = colleges;
-      
+
       $('#college-list-loader').remove();
-      
+
       console.log(colleges);
       var colListItemTemplate = Handlebars.compile($('#college-list-template').html());
       var rendered = colListItemTemplate({'colleges':colleges});
       $('#college-list-items').html(rendered);
-    
-      
+
+
     }
-      
+
   });
-  
-      
+
+
 </script>
 </head>
 
@@ -416,10 +438,10 @@
   </div>
   <div class="ui grid">
     <div class="one wide column">
-      
+
     </div>
     <div class="fourteen wide column">
-      
+
       <div class="ui stackable grid">
         <div class="eleven wide column">
           <h1 class="ui header">
@@ -434,24 +456,24 @@
           </div>
         </div>
       </div>
-      
-      
+
+
       <div class="ui stackable grid">
-        
+
         <!-- College lookup -->
         <div class="ten wide column">
-          
+
           <div class="ui segment">
-            
+
             <div id="college-list-loader" class="ui inverted active dimmer">
               <div class="ui text loader">Loading Universities...</div>
             </div>
-  
+
             <!-- Filtering -->
-            
+
             <div class="ui stackable grid">
               <div class="ui two column wide row">
-                
+
                 <!-- Search -->
                 <div class="ui column">
                   <div class="ui massive right aligned category search">
@@ -459,40 +481,40 @@
                       <input id="college-list-input" class="prompt" type="text" placeholder="Search universities...">
                       <i class="search icon"></i>
                     </div>
-                  </div>      
+                  </div>
                 </div>
-                
+
                 <!-- filters -->
                 <div class="ui column">
-                  
+
                 </div>
               </div>
             </div>
-            
+
             <div class="ui divider"></div>
-            
+
             <div id="college-list-items" class="ui divided items">
             </div>
-            
+
           </div>
-          
+
         </div>
-        
+
         <!-- Map + others -->
         <div class="six wide column">
-          
-          
+
+
         </div>
       </div>
-            
+
     </div>
     <div class="one wide column">
-      
+
     </div>
   </div>
 
-  
-    
+
+
 </body>
 
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -506,11 +528,11 @@ gtag('config', 'UA-114686953-1');
 </script>
 <script>
 
-    
-    
+
+
     var collegeListInput = $('#college-list-input');
     var collegeListContext = $('.college-list-item');
-    
+
     collegeListInput.on('input', function() {
       var collegeListContext = $('.college-list-item');
       var term = $(this).val();
@@ -523,8 +545,8 @@ gtag('config', 'UA-114686953-1');
         });
       }
     });
-  
-  
+
+
 </script>
-  
+
 </html>
