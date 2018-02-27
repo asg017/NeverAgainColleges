@@ -147,7 +147,7 @@
       <div class="extra">
           {{#if hasConfirm }}
           <div class="ui right floated left labeled positive button" tabindex="0">
-            <a href="{{ link }}" target="_blank" class="ui basic label">
+            <a href="{{ link }}" target="_blank" class="ui basic ignore label">
               Confirmed Statement
             </a>
             <a href="{{ link }}" target="_blank" class="ui positive icon button">
@@ -155,7 +155,7 @@
             </a>
           </div>
           {{else}}
-          <div onClick="callModal('{{id}}')" class="ui right floated left labeled negative button" tabindex="0" data-tooltip="Call on {{ alias.[0] }} to put out a statement to protect peaceful protesters.">
+          <div onClick="callModal('{{id}}')" class="ui ignore right floated left labeled negative button" tabindex="0" data-tooltip="Call on {{ alias.[0] }} to put out a statement to protect peaceful protesters.">
             <div class="ui red label">
               Call on {{ alias.[0] }} to take Action
             </div>
@@ -528,12 +528,45 @@ gtag('config', 'UA-114686953-1');
 </script>
 <script>
 
+    debounceFunc = function(func, wait, immediate) {
+    var timeout, args, context, timestamp, result;
 
+    var later = function() {
+      var last = Date.now() - timestamp;
+
+      if (last < wait && last >= 0) {
+        timeout = setTimeout(later, wait - last);
+      } else {
+        timeout = null;
+        if (!immediate) {
+          result = func.apply(context, args);
+          if (!timeout) context = args = null;
+        }
+      }
+    };
+
+    return function() {
+      context = this;
+      args = arguments;
+      timestamp = Date.now();
+      var callNow = immediate && !timeout;
+      if (!timeout) timeout = setTimeout(later, wait);
+      if (callNow) {
+        result = func.apply(context, args);
+        context = args = null;
+      }
+
+      return result;
+    };
+  };
+  
 
     var collegeListInput = $('#college-list-input');
     var collegeListContext = $('.college-list-item');
 
-    collegeListInput.on('input', function() {
+    collegeListInput.on('input', 
+    
+    debounceFunc( function() {
       var collegeListContext = $('.college-list-item');
       var term = $(this).val();
       collegeListContext.show().unmark();
@@ -541,10 +574,11 @@ gtag('config', 'UA-114686953-1');
         collegeListContext.mark(term, {
           done: function() {
             collegeListContext.not(":has(mark)").hide();
-          },debug:true
+          },
+          exclude: ['.ignore']
         });
       }
-    });
+    },100, null));
 
 
 </script>

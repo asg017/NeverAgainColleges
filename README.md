@@ -46,10 +46,12 @@ List of other Javascript libraries used:
 - [ ] Make list sortable/add categories (UC's, Ivy's, etc.)
 - [ ] Add way to add statements in question(LSU,UChicago, etc.)
 - [ ] Add City/State/Size data to Spreadsheet
-
+- [ ] Add url params to specify college,  ?college=3, ?college=UCSanDiego
 
 ## Contributors
 
 [Alex Garcia](https://github.com/asg017) - Main Author
+
 [Isaac Diamond](https://github.com/isaacd9) - Active contributor
+
 [Joy Chen](https://github.com/joyhchen) - Active contributor
