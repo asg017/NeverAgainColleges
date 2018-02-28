@@ -38,10 +38,14 @@
 
 <script id="call-modal-template" type="text/x-handlebars-template">
 
-<div id="call-modal-{{ college.id }}" class="ui modal">
+<div id="call-modal-{{ college.id }}" class="ui large modal">
   <i class="close icon"></i>
   <div class="header">
+    {{#if college.score_is_1 }}
+    Call on {{ college.name }} to put out a stronger statement.
+    {{else}}
     Call on {{ college.name }} to publically support #NeverAgain demonstrators.
+    {{/if}}
   </div>
   <div class="image content">
     <div class="ui small image">
@@ -50,6 +54,17 @@
     <div class="description">
       <div class="ui header">Fill out your info below to generate a mesage to send to {{ college.alias.[0] }}!</div>
       <div class="ui subheader">NeverAgainColleges.com will not collect any information from you - <a href='about.html'>Privacy Policy</a></div>
+      
+      {{#if college.score_is_1 }}
+      <br>
+      <div class="content">
+        <p>
+          {{ college.alias.[0] }}'s <a href="{{ college.link }}">first statement</a> was not enough - 
+          they did not specifically mention what they would do if a student is disciplined (suspended, expelled)
+          for participating in a demonstration - show them what you think.
+        </p>
+      </div>
+      {{/if}}
       <br>
 
       <div class="ui grid">
@@ -90,14 +105,7 @@
             </div>
           </div>
 
-          {{#if college.twitter }}
-          <div class="segment">
-            <p>
-            <a target="_blank" id="tweet-link" href="https://twitter.com/intent/tweet?text=@{{ college.twitter}}">Tweet @{{ college.twitter }}<i class="ui twitter square icon"></i></a>
-            </p>
-          </div>
-
-          {{/if}}
+          
         </div>
 
         <div class="eight wide column">
@@ -114,10 +122,17 @@
     </div>
   </div>
   <div class="actions">
+    
+    <a target="_blank" id="tweet-link" href="https://twitter.com/intent/tweet?text=@{{ college.twitter}}" class="ui twitter button">
+      Tweet @{{ college.twitter }}
+      <i class="twitter icon"></i>
+    </a>
+    
     <div class="ui positive right labeled icon button">
       Complete
       <i class="checkmark icon"></i>
     </div>
+    
   </div>
 </div>
 </script>
@@ -134,7 +149,7 @@
       <!--
       <div class="meta">
         <span class="price">{{ size }}</span>
-        <span class="stay">1 {{ city }}, {{ state }}</span>
+        <span class="stay">{{ city }}, {{ state }}</span>
       </div>
       -->
 
@@ -145,7 +160,45 @@
       </div>
 
       <div class="extra">
-          {{#if hasConfirm }}
+      
+        <div class="ui stackable grid">
+          <div class="ui eight wide column">
+          </div>
+          <div class="ui eight wide column">
+          
+            {{#if score_is_0 }}
+              <div style="cursor:pointer;" onClick="callModal('{{id}}')" class="ui standard progress red" data-percent='10'
+                data-tooltip="Call on {{ alias.[0] }} to put out a statement to protect peaceful protesters.">
+                <div class="bar"></div>
+                <div class="label">
+                  <h4 class="ui red header ignore"> Call on {{ alias.[0] }} to take Action <i class="red bullhorn icon"></i> </h4> 
+                </div>
+              </div>
+              
+            {{else if score_is_1 }}
+              <div style="cursor:pointer;" onClick="callModal('{{id}}')" class="ui standard progress yellow" data-percent='50'
+              data-tooltip="{{ alias.[0] }}'s initial statement wasn't enough: call on them to specifically protect disciplined students.">
+                <div class="bar"></div>
+                <div class="label">
+                  <h4 class="ui yellow header ignore"> Call on {{ alias.[0] }} to release a stronger statement <i class="yellow bullhorn icon"></i></h4>
+                </div>
+              </div>
+            
+            {{else}}
+            
+              <a style="cursor:pointer;" href="{{ link }}" target="_blank" class="ui standard progress success" 
+              data-percent='100' data-tooltip="{{ alias.[0] }} has released a statement!">
+                <div class="bar"></div>
+                  <span class="green label ignore">Confirmed Statement <i class="check circle outline icon"></i><span>
+                      
+              </a>
+            {{/if}}
+          
+          </div>
+        </div>
+      
+      {{!--
+          {{#if_eq score 2 }}
           <div class="ui right floated left labeled positive button" tabindex="0">
             <a href="{{ link }}" target="_blank" class="ui basic ignore label">
               Confirmed Statement
@@ -163,8 +216,9 @@
               <i class="bullhorn icon"></i>
             </div>
           </div>
-          {{/if}}
-
+          {{/if_eq}}
+      --}}
+      
       </div>
 
 
@@ -174,13 +228,13 @@
 </script>
 
 <script>
-/*
-  var tmp = $('#college-list-template');
-  Mustache.parse(tmp);
+  Handlebars.registerHelper('if_eq', function(a, b, opts) {
+      if(a == b) // Or === depending on your needs
+          return opts.fn(this);
+      else
+          return opts.inverse(this);
+  });
 
-  var rend = Mustache.render(tmp, {});
-  $('#target').html(rend);
-  */
   var x;
   function changeMessage(id) {
 
@@ -242,6 +296,7 @@
     var modalTemplate = Handlebars.compile($('#call-modal-template').html());
     var rendered = modalTemplate({'college':college});
     $('body').append(rendered);
+    
     $('#call-modal-' + schoolId ).modal({
       'onHidden':function(a) {
         $('#call-modal-' + schoolId).remove();
@@ -293,13 +348,14 @@
     "12":'link',
     "13":'tweet',
     "14":'date',
+    "15":'score',
 
   };
   var confirm_columns = {"1":'id', "2":'link', "3":'tweet',"4":'date'};
 
   function getCollegeList(cb) {
 
-    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:N300&alt=json';
+    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:O300&alt=json';
     var d;
 
     $.get(url, function(err, status, data) {
@@ -336,7 +392,10 @@
 
       col.alias = (col.alias) ? col.alias.split(',') : undefined;
       col.hasConfirm = col.hasConfirm === 'TRUE';
-
+      
+      col.score_is_0 = col.score == 0;
+      col.score_is_1 = col.score == 1;
+      col.score_is_2 = col.score == 2;
       if(!col.name)
         col = undefined;
 
@@ -415,14 +474,35 @@
       });
 
       colleges_global = colleges;
-
+      
+      
+      
       $('#college-list-loader').remove();
-
-      console.log(colleges);
+      
+      //console.log(colleges);
       var colListItemTemplate = Handlebars.compile($('#college-list-template').html());
       var rendered = colListItemTemplate({'colleges':colleges});
       $('#college-list-items').html(rendered);
+      $('.progress').progress();
 
+      var score0Count = 0;
+      var score1Count = 0;
+      var score2Count = 0;
+      for(var i = 0; i < colleges.length; i++) {
+        if(colleges[i].score == 0) {
+          score0Count++;
+        }
+        else if(colleges[i].score == 1) {
+          score1Count++;
+        }
+        else {
+          score2Count++;
+        }
+      }
+      
+      $('#stat_score_0').text(score0Count);
+      $('#stat_score_1').text(score1Count);
+      $('#stat_score_2').text(score2Count);
 
     }
 
@@ -471,7 +551,48 @@
 
             <!-- Filtering -->
 
-            <div class="ui stackable grid">
+            <div class="ui stackable padded grid">
+              
+              <div class="ui stackable three column wide row">
+                
+                  <div class="ui column">
+                    <div class="ui green statistic">
+                      <div id="stat_score_2" class="value">
+                        
+                      </div>
+                      <div class="label">
+                        Confirmed Statements
+                      </div>
+                    </div>  
+                  </div>
+                  <div class="ui column">
+                    <div class="ui yellow statistic">
+                      <div id="stat_score_1" class="value">
+                        
+                      </div>
+                      <div class="label">
+                        Insufficient Statements
+                      </div>
+                    </div>  
+                  </div>
+                  <div class="ui column">
+                    <div class="ui red statistic">
+                      <div id="stat_score_0" class="value">
+                        
+                      </div>
+                      <div class="label">
+                        No Statements
+                      </div>
+                    </div>  
+                  </div>
+                  
+                  
+                    
+                  
+                </div>
+                
+                
+              </div>
               <div class="ui two column wide row">
 
                 <!-- Search -->
@@ -488,6 +609,13 @@
                 <div class="ui column">
 
                 </div>
+              </div>
+              <div style="display:none; text-align:center;" id="search-nomatch" class="ui row">
+                    <div class="ui huge fluid pointing red basic label">
+                      No match for <b>"<span id="search-nomatch-span"></span>"</b>!<br>
+                      Think it's a mistake? DM <a href="https://twitter.com/asg_027">@asg_027</a>
+                      on Twitter!
+                    </div>
               </div>
             </div>
 
@@ -570,12 +698,18 @@ gtag('config', 'UA-114686953-1');
       var collegeListContext = $('.college-list-item');
       var term = $(this).val();
       collegeListContext.show().unmark();
+      $('#search-nomatch').hide();
       if (term) {
         collegeListContext.mark(term, {
           done: function() {
             collegeListContext.not(":has(mark)").hide();
           },
-          exclude: ['.ignore']
+          exclude: ['.ignore'],
+          noMatch: function() {
+            $('#search-nomatch-span').text(term);
+            $('#search-nomatch').show();
+          },
+          separateWordSearch:false,
         });
       }
     },100, null));

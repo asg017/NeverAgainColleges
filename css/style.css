@@ -2,3 +2,12 @@ div.content{
     padding-top: 5em;
     padding-bottom: 5em;
 }
+
+.call-to-action-lbl {
+    cursor:pointer;
+}
+.call-to-action-lbl:hover {
+    background-color:#db2828!important;
+    color:#fff!important;
+    border-color:#fff!important;
+}
