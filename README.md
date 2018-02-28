@@ -43,10 +43,14 @@ List of other Javascript libraries used:
 
 ## To-Do
 
-- [ ] Make list sortable/add categories (UC's, Ivy's, etc.)
-- [ ] Add way to add statements in question(LSU,UChicago, etc.)
-- [ ] Add City/State/Size data to Spreadsheet
-- [ ] Add url params to specify college,  ?college=3, ?college=UCSanDiego
+- [ ] When empty search, show message enouraging to contact me [HIGH]
+- [ ] Add way to add statements in question(LSU,UChicago, etc.) [HIGH]
+- [ ] Include pagination to list [HIGH]
+- [ ] Use lazy loading for photos [HIGH]
+- [ ] Make list sortable/add categories (UC's, Ivy's, etc.) [MED]
+- [ ] Add City/State/Size data to Spreadsheet [MED]
+- [ ] Add url params to specify college,  ?college=3, ?college=UCSanDiego [LOW]
+- [ ] Add Press space, place where NeverAgainColleges.com has been cited in the press [LOW]
 
 ## Contributors
 
