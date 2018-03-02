@@ -349,13 +349,15 @@
     "13":'tweet',
     "14":'date',
     "15":'score',
+    "16":'comment',
+    "17":'statement',
 
   };
   var confirm_columns = {"1":'id', "2":'link', "3":'tweet',"4":'date'};
 
   function getCollegeList(cb) {
 
-    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:O300&alt=json';
+    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:Q300&alt=json';
     var d;
 
     $.get(url, function(err, status, data) {
@@ -503,6 +505,15 @@
       $('#stat_score_0').text(score0Count);
       $('#stat_score_1').text(score1Count);
       $('#stat_score_2').text(score2Count);
+      
+      var statements = colleges.filter(function(a) {
+        
+        return (a.statement) ? true:false;
+      });
+      
+      console.log(statements);
+
+
 
     }
 
@@ -631,6 +642,10 @@
         <!-- Map + others -->
         <div class="six wide column">
 
+          <!--
+          <div class="ui segment">
+          </div>
+          -->
 
         </div>
       </div>
