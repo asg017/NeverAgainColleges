@@ -27,6 +27,7 @@
 <script src="js/handlebars.min.js"></script>
 <script src="js/mark.min.js"></script>
 <script src="js/clipboard.min.js"></script>
+<script src="js/lazyload.min.js"></script>
 
 <style>
   mark {
@@ -142,7 +143,7 @@
 {{#colleges}}
   <div id="{{alias.[0]}}-item" class="college-list-item item">
     <div class="ui tiny image">
-      <img src="{{#if photo }}{{photo}}{{else}}http://via.placeholder.com/150x150{{/if}}">
+      <img data-src="{{#if photo }}{{photo}}{{else}}http://via.placeholder.com/150x150{{/if}}">
     </div>
     <div class="content">
       <div class="header">{{ name }}</div>
@@ -486,6 +487,7 @@
       var rendered = colListItemTemplate({'colleges':colleges});
       $('#college-list-items').html(rendered);
       $('.progress').progress();
+      new LazyLoad();
 
       var score0Count = 0;
       var score1Count = 0;
