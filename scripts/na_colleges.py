@@ -6,7 +6,6 @@ G_SHEET_TEMPLATE = 'https://spreadsheets.google.com/feeds/cells/%s/%s/public/val
 
 def get_sheet_url(sp_id, ws_id, cell_range):
     s = G_SHEET_TEMPLATE % (sp_id, ws_id, cell_range)
-    print(s)
     return (s)
 
 NA_COLLEGES_SPREADSHEET = {

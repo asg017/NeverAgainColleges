@@ -74,31 +74,31 @@
             <div class="grouped fields">
               <label>I am a...</label>
               <div class="field">
-                <div class="ui radio checkbox">
+                <div class="ui radio checkbox identity">
                   <input type="radio" name="a" value="current">
                   <label>Current Applicant</label>
                 </div>
               </div>
               <div class="field">
-                <div class="ui radio checkbox">
+                <div class="ui radio checkbox identity">
                   <input type="radio" name="a" value="prospective">
                   <label>Prospective Applicant</label>
                 </div>
               </div>
               <div class="field">
-                <div class="ui radio checkbox">
+                <div class="ui radio checkbox identity">
                   <input type="radio" name="a" value="student">
                   <label>Current Student</label>
                 </div>
               </div>
               <div class="field">
-                <div class="ui radio checkbox">
+                <div class="ui radio checkbox identity">
                   <input type="radio" name="a" value="alumni">
                   <label>Alumni of the University</label>
                 </div>
               </div>
               <div class="field">
-                <div class="ui radio checkbox">
+                <div class="ui radio checkbox identity">
                   <input type="radio" name="a" value="community">
                   <label>Member of the Community</label>
                 </div>
@@ -141,7 +141,7 @@
 <script id="college-list-template" type="text/x-handlebars-template">
 
 {{#colleges}}
-  <div id="{{alias.[0]}}-item" class="college-list-item item">
+  <div id="{{alias.[0]}}-item" data-college-id="{{ id }}" class="college-list-item item">
     <div class="ui tiny image">
       <img data-src="{{#if photo }}{{photo}}{{else}}http://via.placeholder.com/150x150{{/if}}">
     </div>
@@ -304,7 +304,7 @@
       },
     });
     $('#call-modal-' + schoolId ).modal('show');
-    $('.ui.checkbox').checkbox({
+    $('.ui.checkbox.identity').checkbox({
       onChecked: function() {
 
         var val = $(this)[0].value;
@@ -442,7 +442,8 @@
   }
 
   var colleges_global;
-
+  var colleges_map;
+  
   getCollegeList( function(err, colleges) {
     if(err) {
 
@@ -450,7 +451,7 @@
     }
     else {
 
-
+      colleges_map = colleges;
       c = [];
       for(var col in colleges) {
         c.push(colleges[col]);
@@ -488,7 +489,27 @@
       $('#college-list-items').html(rendered);
       $('.progress').progress();
       new LazyLoad();
-
+      
+      $('#toggle-alphabetized').checkbox({
+        
+        onChecked: function() {
+          var items = $('.college-list-item');
+          var container = $('#college-list-items');
+          
+          items.sort(function(a,b) {
+            var aid = a.getAttribute('data-college-id');
+            var bid = b.getAttribute('data-college-id');
+            
+            var aCollege = colleges_map[aid];
+            var bCollege = colleges_map[bid];
+            
+            return aCollege.name.localeCompare(bCollege.name);
+          });
+          
+          items.detach().appendTo(container);
+        } 
+        
+      });
       var score0Count = 0;
       var score1Count = 0;
       var score2Count = 0;
@@ -606,23 +627,37 @@
                 
                 
               </div>
-              <div class="ui two column wide row">
-
-                <!-- Search -->
-                <div class="ui column">
-                  <div class="ui massive right aligned category search">
-                    <div class="ui icon input">
-                      <input id="college-list-input" class="prompt" type="text" placeholder="Search universities...">
-                      <i class="search icon"></i>
+              
+              <div class="ui divider"></div>
+              <div class="ui grid">
+                
+                <div class="ui two column wide row">
+  
+                  <!-- Search -->
+                  <div class="ui column">
+                    <div class="ui huge right aligned category search">
+                      <div class="ui icon input">
+                        <input id="college-list-input" class="prompt" type="text" placeholder="Search universities...">
+                        <i class="search icon"></i>
+                      </div>
                     </div>
                   </div>
+  
+                  <!-- filters -->
+                  <div class="ui column">
+                    
+                      
+                    <div id="toggle-alphabetized" class="ui toggle checkbox">
+                      <input type="checkbox" name="alphabetized">
+                      <label>Alphabetize?</label>
+                    </div>
+                    
+                    
+                  </div>
                 </div>
-
-                <!-- filters -->
-                <div class="ui column">
-
-                </div>
+              
               </div>
+              
               <div style="display:none; text-align:center;" id="search-nomatch" class="ui row">
                     <div class="ui huge fluid pointing red basic label">
                       No match for <b>"<span id="search-nomatch-span"></span>"</b>!<br>
