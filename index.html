@@ -443,6 +443,7 @@
 
   var colleges_global;
   var colleges_map;
+  var ll;
   
   getCollegeList( function(err, colleges) {
     if(err) {
@@ -488,7 +489,7 @@
       var rendered = colListItemTemplate({'colleges':colleges});
       $('#college-list-items').html(rendered);
       $('.progress').progress();
-      new LazyLoad();
+      ll = new LazyLoad();
       
       $('#toggle-alphabetized').checkbox({
         
@@ -587,7 +588,7 @@
 
             <div class="ui stackable padded grid">
               
-              <div class="ui stackable three column wide row">
+              <div style="text-align:center;" class="ui stackable three column wide row">
                 
                   <div class="ui column">
                     <div class="ui green statistic">
@@ -631,12 +632,12 @@
               <div class="ui divider"></div>
               <div class="ui grid">
                 
-                <div class="ui two column wide row">
+                <div class="ui stackable two column wide row">
   
                   <!-- Search -->
                   <div class="ui column">
                     <div class="ui huge right aligned category search">
-                      <div class="ui icon input">
+                      <div style="width:100%" class="ui icon input">
                         <input id="college-list-input" class="prompt" type="text" placeholder="Search universities...">
                         <i class="search icon"></i>
                       </div>
@@ -755,6 +756,7 @@ gtag('config', 'UA-114686953-1');
         collegeListContext.mark(term, {
           done: function() {
             collegeListContext.not(":has(mark)").hide();
+            ll.update();
           },
           exclude: ['.ignore'],
           noMatch: function() {
