@@ -229,12 +229,17 @@
 </script>
 
 <script>
-  Handlebars.registerHelper('if_eq', function(a, b, opts) {
-      if(a == b) // Or === depending on your needs
-          return opts.fn(this);
-      else
-          return opts.inverse(this);
-  });
+
+  $(document).ready(function(){
+    $('.ui.accordion')
+    .accordion();
+    if($(window).width() >= 768) {
+      $('#demonstrations-content').addClass('active');
+      $('#demonstrations-title').addClass('active');
+      $('#demonstrations-title').css('display', 'none');
+    }
+  })
+  
 
   var x;
   function changeMessage(id) {
@@ -251,7 +256,7 @@
 
     'introduction': {
       'current': 'I am a 2018 applicant at {{schoolName}}, and I am worried about potential repercussions on my potential admittance to {{schoolName}} if I participate in #NeverAgain demonstration against gun violence. ',
-      'prospective': 'I am a prospective applicant {{schoolName}} and I am worried about potential repercussions on my potential admittance to {{schoolName}} if I participate in #NeverAgain demonstration against gun violence. ',
+    
       'student': 'I am a current student at {{schoolName}}, and I am worried that applicants to my university may face repercussions for participating in #NeverAgain demonstrations against gun violence. ',
       'alumni':'I am an alumnus of the {{schoolName}}, and I am worried that applicants to my university may face repercussions for participating in #NeverAgain demonstrations against gun violence. ',
       'community':'I am a member of the {{schoolName}} community, and I am worried that applicants to our university may face repercussions for participating in #NeverAgain demonstrations against gun violence. '
@@ -352,13 +357,13 @@
     "15":'score',
     "16":'comment',
     "17":'statement',
+    "18":'categories',
 
   };
-  var confirm_columns = {"1":'id', "2":'link', "3":'tweet',"4":'date'};
-
+ 
   function getCollegeList(cb) {
 
-    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:Q400&alt=json';
+    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:R400&alt=json';
     var d;
 
     $.get(url, function(err, status, data) {
@@ -408,39 +413,7 @@
     return cols;
   }
 
-  function getConfirmList(cb) {
-
-    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/2/public/values?range=a2:e150&alt=json';
-    var d;
-
-    $.get(url, function(err, status, data) {
-      var entries = data.responseJSON.feed.entry;
-      var confirms = {};
-
-      for(var i = 0; i < entries.length; i++){
-      	var e_row = entries[i].gs$cell.row;
-      	var e_col = entries[i].gs$cell.col;
-      	if(!confirms[e_row]) {
-      		confirms[e_row] = {};
-          }
-      	confirms[e_row][confirm_columns[e_col]] = entries[i].gs$cell.$t;
-      }
-
-      var c = {};
-
-      for(var con in confirms) {
-        //c.push(confirms[con]);
-        c[confirms[con].id] = confirms[con];
-
-      }
-      //confirms = c;
-
-      cb(null, c);
-    });
-
-
-  }
-
+ 
   var colleges_global;
   var colleges_map;
   var ll;
@@ -569,11 +542,12 @@
             <a href="about.html" class="item">About</a>
             <!--<a class="item">Press</a>-->
           </div>
+          
         </div>
       </div>
 
 
-      <div class="ui stackable grid">
+      <div class="ui mobile reversed stackable grid">
 
         <!-- College lookup -->
         <div class="ten wide column">
@@ -650,7 +624,7 @@
                       
                     <div id="toggle-alphabetized" class="ui toggle checkbox">
                       <input type="checkbox" name="alphabetized">
-                      <label>Alphabetize?</label>
+                      <label>Alphabetize</label>
                     </div>
                     
                     
@@ -675,15 +649,95 @@
 
           </div>
 
-        </div>
 
-        <!-- Map + others -->
+        <!-- MArch info + others -->
         <div class="six wide column">
 
-          <!--
+<!-- Marches info -->
           <div class="ui segment">
+            
+            <h2 class="ui center aligned icon header">
+              <i class="users icon"></i>
+              <div class="content">
+                Demonstrations
+                <div class="sub header">Demonstrations popular within the #NeverAgain movement.</div>
+              </div>
+            </h2>
+            
+            <div class="ui styled fluid accordion">
+              
+              <div id="demonstrations-title" class="title">
+                <i class="dropdown icon"></i>
+                Tap to show!
+              </div>
+              
+              <div id="demonstrations-content" class="content">
+                <div class="ui link centered cards">
+              
+                  <!-- ENOUGH: National School Walkout -->
+                  <div class="ui card">
+                    <a class="image" href="https://www.actionnetwork.org/event_campaigns/enough-national-school-walkout">
+                      <img src="https://pbs.twimg.com/media/DXO5zLhVoAA54Qb.jpg">
+                    </a>
+                    <div class="content">
+                      <a class="center aligned header" href="https://www.actionnetwork.org/event_campaigns/enough-national-school-walkout">ENOUGH: National School Walkout</a>
+                      <div class="center aligned meta">
+                        <a>10:00am Saturday March 14th, 2018</a>
+                      </div>
+                    </div>
+                    <div class="extra content">
+                      
+                      <a href="https://twitter.com/WomensMarchY" class="ui fluid twitter button">
+                        <i class="twitter icon"></i>
+                        @WomensMarchY
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <!-- March For Our Lives -->
+                  <div class="ui card">
+                    <a class="image" href="https://marchforourlives.com/">
+                      <img src="https://pbs.twimg.com/profile_images/965148741161242624/EudhspDO_400x400.jpg">
+                    </a>
+                    <div class="content">
+                      <a class="center aligned header" href="https://marchforourlives.com/">March For Our Lives</a>
+                      <div class="center aligned meta">
+                        <a>Saturday March 24th, 2018</a>
+                      </div>
+                    </div>
+                    <div class="extra content">
+                      
+                      <a href="https://twitter.com/AMarch4OurLives" class="ui fluid twitter button">
+                        <i class="twitter icon"></i>
+                        @AMarch4OurLives
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <!-- National School Walkout -->
+                  <div class="ui card">
+                    <a class="image" href="http://act.indivisible.org/event/national-school-walkout/">
+                      <img src="https://pbs.twimg.com/profile_images/971492866584391680/6M_byyKP_400x400.jpg">
+                    </a>
+                    <div class="content">
+                      <a class="center aligned header" href="http://act.indivisible.org/event/national-school-walkout/">National School Walkout</a>
+                      <div class="center aligned meta">
+                        <a>Friday April 20th, 2018</a>
+                      </div>
+                    </div>
+                    <div class="extra content">
+                      
+                      <a href="https://twitter.com/schoolwalkoutUS" class="ui fluid twitter button">
+                        <i class="twitter icon"></i>
+                        @schoolwalkoutUS
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
           </div>
-          -->
 
         </div>
       </div>
