@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.css" integrity="sha256-/mC8AIsSmTcTtaf8vgnfbZXZLYhJCd0b9If/M0Y5nDw=" crossorigin="anonymous" />
 
-<!--<link rel="stylesheet" type="text/css" href="css/semantic.min.css">-->
+<link rel="stylesheet" type="text/css" href="css/style.css">
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
@@ -28,7 +28,6 @@
 <script src="js/mark.min.js"></script>
 <script src="js/clipboard.min.js"></script>
 <script src="js/lazyload.min.js"></script>
-
 <style>
   mark {
   background: orange;
@@ -36,6 +35,46 @@
   padding: 0;
 }
 </style>
+
+
+<script id="demonstrations-items-template" type="text/x-handlebars-template">
+  <div class="ui compact large selection list">
+    {{#demonstrations}}
+    <div class="item">
+      <img alt="{{ name }}" class="ui avatar image" src="{{ logo }}">
+      <a href="{{ link }}" class="content" target="_blank">
+        <div class="center aligned header">{{ name }}</div>
+        <div class="center aligned meta">
+          {{ date }}
+        </div>
+      </a>
+      <div class="right floated content">
+        <a style="cursor:pointer;" href="https://twitter.com/{{ twitterHandle }}" target="_blank" >
+          <i class="twitter link icon"></i>
+        </a>
+      </div>
+      <!--
+      <div class="right floated content">
+        <a href="https://twitter.com/{{ twitterHandle }}" class="ui icon twitter button"><i class="twitter icon"></i></a>
+      </div>
+      -->
+    </div>
+    {{/demonstrations}}
+  </div>
+</script>
+<script id="media-items-template" type="text/x-handlebars-template">
+<div class="ui large selection list">
+  {{#mentions}}
+  <a href ="{{link}}" class="item" target="_blank">
+   <img class="ui avatar image" src="{{ logo }}">
+    <div class="content">
+      <div class="header">{{ source }}</div>
+      <div class="descriptions">{{ author }}</div>
+    </div>
+  </a> 
+  {{/mentions}}
+</div>
+</script>
 
 <script id="call-modal-template" type="text/x-handlebars-template">
 
@@ -54,7 +93,10 @@
     </div>
     <div class="description">
       <div class="ui header">Fill out your info below to generate a mesage to send to {{ college.alias.[0] }}!</div>
-      <div class="ui subheader">NeverAgainColleges.com will not collect any information from you - <a href='about.html'>Privacy Policy</a></div>
+      <div class="ui subheader">
+        NeverAgainColleges.com will not collect any information from you - 
+        <a href='about.html'>Privacy Policy</a>
+      </div>
       
       {{#if college.score_is_1 }}
       <br>
@@ -111,8 +153,15 @@
 
         <div class="eight wide column">
           <div class="ui segment">
-            <p id="modal-message"><i class="ui hand point left outline icon"></i> ( Generated message will appear hear, fill out information to the left )</p>
-            <div style="cursor:pointer;" class="ui bottom right attached label clipboard" data-clipboard-target='#modal-message'>Copy</div>
+            <p id="modal-message">
+              <i class="ui hand point left outline icon"></i> 
+              ( Generated message will appear hear, fill out information to the left )
+            </p>
+            <div style="cursor:pointer;" 
+              class="ui bottom right attached label clipboard"
+              data-clipboard-target='#modal-message'>
+              Copy
+            </div>
           </div>
         </div>
 
@@ -124,7 +173,9 @@
   </div>
   <div class="actions">
     
-    <a target="_blank" id="tweet-link" href="https://twitter.com/intent/tweet?text=@{{ college.twitter}}" class="ui twitter button">
+    <a target="_blank" id="tweet-link" 
+    href="https://twitter.com/intent/tweet?text=@{{ college.twitter}}" 
+    class="ui twitter button">
       Tweet @{{ college.twitter }}
       <i class="twitter icon"></i>
     </a>
@@ -143,7 +194,7 @@
 {{#colleges}}
   <div id="{{alias.[0]}}-item" data-college-id="{{ id }}" class="college-list-item item">
     <div class="ui tiny image">
-      <img data-src="{{#if photo }}{{photo}}{{else}}http://via.placeholder.com/150x150{{/if}}">
+      <img alt="{{ name }}" data-src="{{#if photo }}{{photo}}{{else}}http://via.placeholder.com/150x150{{/if}}">
     </div>
     <div class="content">
       <div class="header">{{ name }}</div>
@@ -160,14 +211,15 @@
         {{/alias}}
       </div>
 
-      <div class="extra">
+      <div class="content">
       
         <div class="ui stackable grid">
-          <div class="ui eight wide column">
+          <div class="ui five wide column">
           </div>
-          <div class="ui eight wide column">
+          <div class="ui eleven wide column">
           
             {{#if score_is_0 }}
+            
               <div style="cursor:pointer;" onClick="callModal('{{id}}')" class="ui standard progress red" data-percent='10'
                 data-tooltip="Call on {{ alias.[0] }} to put out a statement to protect peaceful protesters.">
                 <div class="bar"></div>
@@ -175,50 +227,123 @@
                   <h4 class="ui red header ignore"> Call on {{ alias.[0] }} to take Action <i class="red bullhorn icon"></i> </h4> 
                 </div>
               </div>
+            
+              <div class="ui segment" style="cursor:pointer;" onClick="callModal('{{id}}')">
+                <div class="ui top attached progress red" data-percent='10'>
+                  <div class="bar"></div>
+                </div>
+                <div class="ui list">
+                  <div class="item">
+                    <i class="red times icon"></i>
+                    <div class="content">
+                      No public statement
+                    </div>
+                  </div>
+                  <div class="item">
+                    <i class="red times icon"></i>
+                    <div class="content">
+                      No stance on the rights of peaceful demonstrators
+                    </div>
+                  </div>
+                  <div class="item">
+                    <i class="red times icon"></i>
+                    <div class="content">
+                      Has not stated policy regarding disciplined students 
+                    </div>
+                  </div>
+                </div>
+              
+                <div class="ui bottom attached progress red" data-percent='10'>
+                  <div class="bar"></div>
+                </div>
+              </div>
+                
+                  
               
             {{else if score_is_1 }}
-              <div style="cursor:pointer;" onClick="callModal('{{id}}')" class="ui standard progress yellow" data-percent='50'
+              <div style="cursor:pointer;" onClick="callModal('{{id}}')" class="ui standard progress yellow" data-percent='66'
               data-tooltip="{{ alias.[0] }}'s initial statement wasn't enough: call on them to specifically protect disciplined students.">
                 <div class="bar"></div>
                 <div class="label">
                   <h4 class="ui yellow header ignore"> Call on {{ alias.[0] }} to release a stronger statement <i class="yellow bullhorn icon"></i></h4>
                 </div>
               </div>
+              
+              <div class="ui segment" style="cursor:pointer;" onClick="callModal('{{id}}')">
+                <div class="ui top attached progress yellow" data-percent='66'>
+                  <div class="bar"></div>
+                </div>
+                
+                <div class="ui list">
+                  <div class="item">
+                    <i class="green check icon"></i>
+                    <div class="content">
+                      Released public statement
+                    </div>
+                  </div>
+                  <div class="item">
+                    <i class="green check icon"></i>
+                    <div class="content">
+                      Respects the rights of peaceful demonstrators
+                    </div>
+                  </div>
+                  <div class="item">
+                    <i class="red times icon"></i>
+                    <div class="content">
+                      Has not stated policy regarding disciplined students 
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="ui bottom attached progress yellow" data-percent='66'>
+                  <div class="bar"></div>
+                </div>
+              </div>
+                
             
             {{else}}
             
-              <a style="cursor:pointer;" href="{{ link }}" target="_blank" class="ui standard progress success" 
+              <a class="ui standard progress success"  style="cursor:pointer;" href="{{ link }}" target="_blank"
               data-percent='100' data-tooltip="{{ alias.[0] }} has released a statement!">
                 <div class="bar"></div>
                   <span class="green label ignore">Confirmed Statement <i class="check circle outline icon"></i><span>
-                      
               </a>
+              
+              <div class="ui segment">
+                <div class="ui top attached progress success" data-percent='100'>
+                  <div class="bar"></div>
+                </div>
+                
+                  <div class="ui list">
+                    <div class="item">
+                      <i class="green check icon"></i>
+                      <div class="content">
+                        Released public statement
+                      </div>
+                    </div>
+                    <div class="item">
+                      <i class="green check icon"></i>
+                      <div class="content">
+                        Respects the rights of peaceful demonstrators
+                      </div>
+                    </div>
+                    <div class="item">
+                      <i class="green check icon"></i>
+                      <div class="content">
+                        Will not penalized disciplined students 
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="ui bottom attached progress success" data-percent='100'>
+                    <div class="bar"></div>
+                  </div>
+                </div>
+                
             {{/if}}
           
           </div>
         </div>
-      
-      {{!--
-          {{#if_eq score 2 }}
-          <div class="ui right floated left labeled positive button" tabindex="0">
-            <a href="{{ link }}" target="_blank" class="ui basic ignore label">
-              Confirmed Statement
-            </a>
-            <a href="{{ link }}" target="_blank" class="ui positive icon button">
-              <i class="check circle icon"></i>
-            </a>
-          </div>
-          {{else}}
-          <div onClick="callModal('{{id}}')" class="ui ignore right floated left labeled negative button" tabindex="0" data-tooltip="Call on {{ alias.[0] }} to put out a statement to protect peaceful protesters.">
-            <div class="ui red label">
-              Call on {{ alias.[0] }} to take Action
-            </div>
-            <div class="ui negative icon button">
-              <i class="bullhorn icon"></i>
-            </div>
-          </div>
-          {{/if_eq}}
-      --}}
       
       </div>
 
@@ -234,10 +359,43 @@
     $('.ui.accordion')
     .accordion();
     if($(window).width() >= 768) {
-      $('#demonstrations-content').addClass('active');
-      $('#demonstrations-title').addClass('active');
-      $('#demonstrations-title').css('display', 'none');
+      $('#floating-button').css('display','none');
+      $('#demonstrations-content,#media-content').addClass('active');
+      $('#demonstrations-title,#media-title').addClass('active').css('display', 'none');
     }
+    
+    
+    $('#floating-button').click(function() {
+      
+      //https://css-tricks.com/snippets/jquery/smooth-scrolling/
+      $('html, body').animate({
+          scrollTop: $('#search-segment').offset().top
+        }, 500, function() {
+          return;
+          var $target = $(target);
+          $target.focus();
+          if ($target.is(":focus")) { // Checking if the target was focused
+            return false;
+          } else {
+            $target.attr('tabindex','-1'); // Adding tabindex for elements not focusable
+            $target.focus(); // Set focus again
+          };
+        });
+        
+    })
+  })
+  
+  $.get('/data/media.json', function(data){
+    var template = Handlebars.compile($('#media-items-template').html());
+    var rendered = template(data);
+    $('#media-content').html(rendered);
+    
+  })
+    $.get('/data/demonstrations.json', function(data){
+    var template = Handlebars.compile($('#demonstrations-items-template').html());
+    var rendered = template(data);
+    $('#demonstrations-content').html(rendered);
+    
   })
   
 
@@ -363,10 +521,11 @@
  
   function getCollegeList(cb) {
 
-    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:R400&alt=json';
+    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:R450&alt=json';
     var d;
 
     $.get(url, function(err, status, data) {
+      
       var entries = data.responseJSON.feed.entry;
       var colleges = {};
 
@@ -430,7 +589,7 @@
       for(var col in colleges) {
         c.push(colleges[col]);
       }
-
+      
       colleges = c;
       colleges = colleges.sort(function(a,b) {
 
@@ -450,20 +609,18 @@
       }).filter(function(col){
         return col !== undefined;
       });
-
       colleges_global = colleges;
       
       
       
       $('#college-list-loader').remove();
       
-      //console.log(colleges);
+      
       var colListItemTemplate = Handlebars.compile($('#college-list-template').html());
       var rendered = colListItemTemplate({'colleges':colleges});
-      $('#college-list-items').html(rendered);
-      $('.progress').progress();
-      ll = new LazyLoad();
       
+      $('#college-list-items').html(rendered);
+      ll = new LazyLoad();
       $('#toggle-alphabetized').checkbox({
         
         onChecked: function() {
@@ -503,13 +660,30 @@
       $('#stat_score_1').text(score1Count);
       $('#stat_score_2').text(score2Count);
       
+      var scoreTotal = score0Count + score1Count + score2Count;
+      
+      
+      $('#statement-multibar-confirm').css('width', (score2Count/scoreTotal*100)+'%');
+      $('#statement-multibar-insuff').css('width', (score1Count/scoreTotal*100)+'%');
+      $('#statement-multibar-none').css('width', (score0Count/scoreTotal*100)+'%');
+      
+      $('#college-list-input').transition({
+        animation:'glow'
+      }).transition('set looping');
+      $('#college-list-input').click(function() {
+        $(this).transition('remove looping');
+      })
+      
       var statements = colleges.filter(function(a) {
         
         return (a.statement) ? true:false;
       });
       
-      console.log(statements);
-
+      $('.ui.progress').progress();
+      
+      
+      
+      
 
 
     }
@@ -529,12 +703,11 @@
 
     </div>
     <div class="fourteen wide column">
-
       <div class="ui stackable grid">
         <div class="eleven wide column">
           <h1 class="ui header">
             #NeverAgain Colleges
-            <div class="sub header">US Colleges that are committed to defend the #NeverAgain Movement.</div>
+            <div class="sub header">US Colleges that will not penalized students who are disciplined for peacefully demonstrating.</div>
           </h1>
         </div>
         <div class="five wide column">
@@ -551,75 +724,34 @@
 
         <!-- College lookup -->
         <div class="ten wide column">
-
-          <div class="ui segment">
-
-            <div id="college-list-loader" class="ui inverted active dimmer">
+          <div id="college-list-loader" class="ui inverted active dimmer">
               <div class="ui text loader">Loading Universities...</div>
-            </div>
-
-            <!-- Filtering -->
-
-            <div class="ui stackable padded grid">
+          </div>
+          
+          <div id="search-segment" class="ui segment">
+            <h2 div="ui header">Search</h2>
+            
+            <!-- Search Bar + Filtering -->
+            <div class="ui segment">
               
-              <div style="text-align:center;" class="ui stackable three column wide row">
-                
-                  <div class="ui column">
-                    <div class="ui green statistic">
-                      <div id="stat_score_2" class="value">
-                        
-                      </div>
-                      <div class="label">
-                        Confirmed Statements
-                      </div>
-                    </div>  
-                  </div>
-                  <div class="ui column">
-                    <div class="ui yellow statistic">
-                      <div id="stat_score_1" class="value">
-                        
-                      </div>
-                      <div class="label">
-                        Insufficient Statements
-                      </div>
-                    </div>  
-                  </div>
-                  <div class="ui column">
-                    <div class="ui red statistic">
-                      <div id="stat_score_0" class="value">
-                        
-                      </div>
-                      <div class="label">
-                        No Statements
-                      </div>
-                    </div>  
-                  </div>
-                  
-                  
-                    
-                  
-                </div>
-                
-                
-              </div>
               
-              <div class="ui divider"></div>
-              <div class="ui grid">
+              <div class="ui padded grid">
                 
-                <div class="ui stackable two column wide row">
+                <!--<div class="ui stackable one column wide row">-->
   
                   <!-- Search -->
-                  <div class="ui column">
-                    <div class="ui huge right aligned category search">
+                  <div class="ui row">
+                    <div style="width:100%" class="ui huge right aligned category search">
                       <div style="width:100%" class="ui icon input">
                         <input id="college-list-input" class="prompt" type="text" placeholder="Search universities...">
                         <i class="search icon"></i>
                       </div>
                     </div>
                   </div>
-  
+                  
+                  
                   <!-- filters -->
-                  <div class="ui column">
+                  <div class="ui row">
                     
                       
                     <div id="toggle-alphabetized" class="ui toggle checkbox">
@@ -629,7 +761,7 @@
                     
                     
                   </div>
-                </div>
+                <!--</div>-->
               
               </div>
               
@@ -641,19 +773,77 @@
                     </div>
               </div>
             </div>
-
             <div class="ui divider"></div>
-
-            <div id="college-list-items" class="ui divided items">
+             
+            <!-- Metadata -->
+            <div class="ui segment">
+              <div class="ui stackable padded grid">
+                
+                  <div style="height:20px;" class="ui row">
+                    <div id="statement-multibar">
+                      <div class="statement-multibar-bar" id="statement-multibar-confirm"></div>
+                      <div class="statement-multibar-bar" id="statement-multibar-insuff"></div>
+                      <div class="statement-multibar-bar" id="statement-multibar-none"></div>
+                    </div>
+                  </div>
+    
+                  <div style="text-align:center;" class="ui stackable three column wide row">
+                    
+                      <div class="ui column">
+                        <div class="ui green statistic">
+                          <div id="stat_score_2" class="value">
+                            
+                          </div>
+                          <div class="label">
+                            Confirmed Statements
+                          </div>
+                        </div>  
+                      </div>
+                      <div class="ui column">
+                        <div class="ui yellow statistic">
+                          <div id="stat_score_1" class="value">
+                            
+                          </div>
+                          <div class="label">
+                            Insufficient Statements
+                          </div>
+                        </div>  
+                      </div>
+                      <div class="ui column">
+                        <div class="ui red statistic">
+                          <div id="stat_score_0" class="value">
+                            
+                          </div>
+                          <div class="label">
+                            No Statements
+                          </div>
+                        </div>  
+                      </div>
+                      
+                      
+                        
+                      
+                    </div>
+                    
+                    
+                </div>
             </div>
-
+            <div class="ui divider"></div>
+              
+            <!--College List + Search Results -->
+            <div class="ui segment">
+              <div id="college-list-items" class="ui divided items">
+              </div>
+            </div>
           </div>
 
+        </div>
 
-        <!-- MArch info + others -->
+
+        <!-- March info + others -->
         <div class="six wide column">
 
-<!-- Marches info -->
+          <!-- Marches info -->
           <div class="ui segment">
             
             <h2 class="ui center aligned icon header">
@@ -672,73 +862,36 @@
               </div>
               
               <div id="demonstrations-content" class="content">
-                <div class="ui link centered cards">
+              </div>
               
-                  <!-- ENOUGH: National School Walkout -->
-                  <div class="ui card">
-                    <a class="image" href="https://www.actionnetwork.org/event_campaigns/enough-national-school-walkout">
-                      <img src="https://pbs.twimg.com/media/DXO5zLhVoAA54Qb.jpg">
-                    </a>
-                    <div class="content">
-                      <a class="center aligned header" href="https://www.actionnetwork.org/event_campaigns/enough-national-school-walkout">ENOUGH: National School Walkout</a>
-                      <div class="center aligned meta">
-                        <a>10:00am Saturday March 14th, 2018</a>
-                      </div>
-                    </div>
-                    <div class="extra content">
-                      
-                      <a href="https://twitter.com/WomensMarchY" class="ui fluid twitter button">
-                        <i class="twitter icon"></i>
-                        @WomensMarchY
-                      </a>
-                    </div>
-                  </div>
-                  
-                  <!-- March For Our Lives -->
-                  <div class="ui card">
-                    <a class="image" href="https://marchforourlives.com/">
-                      <img src="https://pbs.twimg.com/profile_images/965148741161242624/EudhspDO_400x400.jpg">
-                    </a>
-                    <div class="content">
-                      <a class="center aligned header" href="https://marchforourlives.com/">March For Our Lives</a>
-                      <div class="center aligned meta">
-                        <a>Saturday March 24th, 2018</a>
-                      </div>
-                    </div>
-                    <div class="extra content">
-                      
-                      <a href="https://twitter.com/AMarch4OurLives" class="ui fluid twitter button">
-                        <i class="twitter icon"></i>
-                        @AMarch4OurLives
-                      </a>
-                    </div>
-                  </div>
-                  
-                  <!-- National School Walkout -->
-                  <div class="ui card">
-                    <a class="image" href="http://act.indivisible.org/event/national-school-walkout/">
-                      <img src="https://pbs.twimg.com/profile_images/971492866584391680/6M_byyKP_400x400.jpg">
-                    </a>
-                    <div class="content">
-                      <a class="center aligned header" href="http://act.indivisible.org/event/national-school-walkout/">National School Walkout</a>
-                      <div class="center aligned meta">
-                        <a>Friday April 20th, 2018</a>
-                      </div>
-                    </div>
-                    <div class="extra content">
-                      
-                      <a href="https://twitter.com/schoolwalkoutUS" class="ui fluid twitter button">
-                        <i class="twitter icon"></i>
-                        @schoolwalkoutUS
-                      </a>
-                    </div>
-                  </div>
-                </div>
+            </div>
+            
+          </div>
+          
+                    <div class="ui segment">
+            
+            <h2 class="ui center aligned icon header">
+              <i class="newspaper outline icon"></i>
+              <div class="content">
+                Media
+                <div class="sub header">NeverAgainColleges.com mentions in the media.</div>
+              </div>
+            </h2>
+            
+            <div class="ui styled fluid accordion">
+              
+              <div id="media-title" class="title">
+                <i class="dropdown icon"></i>
+                Tap to show!
+              </div>
+              
+              <div id="media-content" class="content">
+                
               </div>
             </div>
             
           </div>
-
+          
         </div>
       </div>
 
@@ -748,6 +901,11 @@
     </div>
   </div>
 
+  <div class="ui button" id="floating-button">
+    <i class="search icon"></i>
+    Scroll to Search 
+    <i class="search icon"></i>
+  </div>
 
 
 </body>
