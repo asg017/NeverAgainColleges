@@ -16,5 +16,6 @@
     "15":"score",
     "16":"comment",
     "17":"statement",
-    "18":"categories"
+    "18":"categories",
+    "19":"csc_id"
   }
