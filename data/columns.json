@@ -1,0 +1,20 @@
+{
+    "1":"id",
+    "2":"name",
+    "3":"city",
+    "4":"state",
+    "5":"size",
+    "6":"alias",
+    "7":"location",
+    "8":"photo",
+    "9":"twitter",
+    "10":"email",
+    "11":"hasConfirm",
+    "12":"link",
+    "13":"tweet",
+    "14":"date",
+    "15":"score",
+    "16":"comment",
+    "17":"statement",
+    "18":"categories"
+  }

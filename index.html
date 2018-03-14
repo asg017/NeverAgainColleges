@@ -497,57 +497,43 @@
     });
 
   }
-  var colleges_columns = {
-    "1":'id',
-    "2":'name',
-    "3":'city',
-    "4":'state',
-    "5":'size',
-    "6":'alias',
-    "7":'location',
-    "8":'photo',
-    "9":'twitter',
-    "10":'email',
-    "11":'hasConfirm',
-    "12":'link',
-    "13":'tweet',
-    "14":'date',
-    "15":'score',
-    "16":'comment',
-    "17":'statement',
-    "18":'categories',
-
-  };
+  
  
   function getCollegeList(cb) {
 
     var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:R450&alt=json';
     var d;
-
-    $.get(url, function(err, status, data) {
+  
+    $.get('/data/columns.json', function(columns) {
       
-      var entries = data.responseJSON.feed.entry;
-      var colleges = {};
-
-      for(var i = 0; i < entries.length; i++){
-      	var e_row = entries[i].gs$cell.row;
-      	var e_col = entries[i].gs$cell.col;
-      	if(!colleges[e_row]) {
-      		colleges[e_row] = {};
-          }
-      	colleges[e_row][colleges_columns[e_col]] = entries[i].gs$cell.$t;
-      }
-
-      var c = {};
-
-      for(var col in colleges) {
-        c[colleges[col].id] = colleges[col];
-      }
-      //colleges = c;
-      colleges = cleanColleges(c);
-      cb(null, c);
+      colleges_columns = columns;
+      
+      $.get(url, function(err, status, data) {
+        
+        var entries = data.responseJSON.feed.entry;
+        var colleges = {};
+  
+        for(var i = 0; i < entries.length; i++){
+        	var e_row = entries[i].gs$cell.row;
+        	var e_col = entries[i].gs$cell.col;
+        	if(!colleges[e_row]) {
+        		colleges[e_row] = {};
+            }
+        	colleges[e_row][colleges_columns[e_col]] = entries[i].gs$cell.$t;
+        }
+  
+        var c = {};
+  
+        for(var col in colleges) {
+          c[colleges[col].id] = colleges[col];
+        }
+        //colleges = c;
+        colleges = cleanColleges(c);
+        cb(null, c);
+      });
+      
+      
     });
-
 
   }
 
@@ -575,121 +561,122 @@
  
   var colleges_global;
   var colleges_map;
+  var colleges_columns;
   var ll;
+  $(document).ready(function(){
+    getCollegeList( function(err, colleges) {
+      if(err) {
   
-  getCollegeList( function(err, colleges) {
-    if(err) {
-
-      return;
-    }
-    else {
-
-      colleges_map = colleges;
-      c = [];
-      for(var col in colleges) {
-        c.push(colleges[col]);
+        return;
       }
-      
-      colleges = c;
-      colleges = colleges.sort(function(a,b) {
-
-        if(a.hasConfirm && b.hasConfirm) {
-          //Photos
-          if(a.photo && b.photo) return 0.5 - Math.random();
-          if(!a.photo) return 1;
-          if(!b.photo) return -1;
+      else {
+  
+        colleges_map = colleges;
+        c = [];
+        for(var col in colleges) {
+          c.push(colleges[col]);
         }
-
-        if(!a.hasConfirm)
-          return 0.45 - Math.random();
-        else
-          return 0.55 - Math.random();
-
-        return 0.5 - Math.random();
-      }).filter(function(col){
-        return col !== undefined;
-      });
-      colleges_global = colleges;
-      
-      
-      
-      $('#college-list-loader').remove();
-      
-      
-      var colListItemTemplate = Handlebars.compile($('#college-list-template').html());
-      var rendered = colListItemTemplate({'colleges':colleges});
-      
-      $('#college-list-items').html(rendered);
-      ll = new LazyLoad();
-      $('#toggle-alphabetized').checkbox({
         
-        onChecked: function() {
-          var items = $('.college-list-item');
-          var container = $('#college-list-items');
-          
-          items.sort(function(a,b) {
-            var aid = a.getAttribute('data-college-id');
-            var bid = b.getAttribute('data-college-id');
-            
-            var aCollege = colleges_map[aid];
-            var bCollege = colleges_map[bid];
-            
-            return aCollege.name.localeCompare(bCollege.name);
-          });
-          
-          items.detach().appendTo(container);
-        } 
+        colleges = c;
+        colleges = colleges.sort(function(a,b) {
+  
+          if(a.hasConfirm && b.hasConfirm) {
+            //Photos
+            if(a.photo && b.photo) return 0.5 - Math.random();
+            if(!a.photo) return 1;
+            if(!b.photo) return -1;
+          }
+  
+          if(!a.hasConfirm)
+            return 0.45 - Math.random();
+          else
+            return 0.55 - Math.random();
+  
+          return 0.5 - Math.random();
+        }).filter(function(col){
+          return col !== undefined;
+        });
+        colleges_global = colleges;
         
-      });
-      var score0Count = 0;
-      var score1Count = 0;
-      var score2Count = 0;
-      for(var i = 0; i < colleges.length; i++) {
-        if(colleges[i].score == 0) {
-          score0Count++;
+        
+        
+        $('#college-list-loader').remove();
+        
+        
+        var colListItemTemplate = Handlebars.compile($('#college-list-template').html());
+        var rendered = colListItemTemplate({'colleges':colleges});
+        
+        $('#college-list-items').html(rendered);
+        ll = new LazyLoad();
+        $('#toggle-alphabetized').checkbox({
+          
+          onChecked: function() {
+            var items = $('.college-list-item');
+            var container = $('#college-list-items');
+            
+            items.sort(function(a,b) {
+              var aid = a.getAttribute('data-college-id');
+              var bid = b.getAttribute('data-college-id');
+              
+              var aCollege = colleges_map[aid];
+              var bCollege = colleges_map[bid];
+              
+              return aCollege.name.localeCompare(bCollege.name);
+            });
+            
+            items.detach().appendTo(container);
+          } 
+          
+        });
+        var score0Count = 0;
+        var score1Count = 0;
+        var score2Count = 0;
+        for(var i = 0; i < colleges.length; i++) {
+          if(colleges[i].score == 0) {
+            score0Count++;
+          }
+          else if(colleges[i].score == 1) {
+            score1Count++;
+          }
+          else {
+            score2Count++;
+          }
         }
-        else if(colleges[i].score == 1) {
-          score1Count++;
-        }
-        else {
-          score2Count++;
-        }
+        
+        $('#stat_score_0').text(score0Count);
+        $('#stat_score_1').text(score1Count);
+        $('#stat_score_2').text(score2Count);
+        
+        var scoreTotal = score0Count + score1Count + score2Count;
+        
+        
+        $('#statement-multibar-confirm').css('width', (score2Count/scoreTotal*100)+'%');
+        $('#statement-multibar-insuff').css('width', (score1Count/scoreTotal*100)+'%');
+        $('#statement-multibar-none').css('width', (score0Count/scoreTotal*100)+'%');
+        
+        $('#college-list-input').transition({
+          animation:'glow'
+        }).transition('set looping');
+        $('#college-list-input').click(function() {
+          $(this).transition('remove looping');
+        })
+        
+        var statements = colleges.filter(function(a) {
+          
+          return (a.statement) ? true:false;
+        });
+        
+        $('.ui.progress').progress();
+        
+        
+        
+        
+  
+  
       }
-      
-      $('#stat_score_0').text(score0Count);
-      $('#stat_score_1').text(score1Count);
-      $('#stat_score_2').text(score2Count);
-      
-      var scoreTotal = score0Count + score1Count + score2Count;
-      
-      
-      $('#statement-multibar-confirm').css('width', (score2Count/scoreTotal*100)+'%');
-      $('#statement-multibar-insuff').css('width', (score1Count/scoreTotal*100)+'%');
-      $('#statement-multibar-none').css('width', (score0Count/scoreTotal*100)+'%');
-      
-      $('#college-list-input').transition({
-        animation:'glow'
-      }).transition('set looping');
-      $('#college-list-input').click(function() {
-        $(this).transition('remove looping');
-      })
-      
-      var statements = colleges.filter(function(a) {
-        
-        return (a.statement) ? true:false;
-      });
-      
-      $('.ui.progress').progress();
-      
-      
-      
-      
-
-
-    }
-
+  
+    });
   });
-
 
 </script>
 </head>
