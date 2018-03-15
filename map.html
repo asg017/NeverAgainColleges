@@ -250,7 +250,7 @@
       }
     });
     
-    var rangeStart = 80;
+    var rangeStart = 70;
     $('#radius-range').range({
       min: 1,
       max: 100,
@@ -261,13 +261,13 @@
         updateRadius();
       }
     });
-    var marchesRadiusStart = 3;
+    var marchesRadiusStart = 30;
     $('#marches-radius-range').range({
       min: 1,
-      max: 10,
+      max: 100,
       start: marchesRadiusStart,
       onChange: function(value) {
-        marchesCurrRadius = marchesMaxRadius * (value/10);
+        marchesCurrRadius = marchesMaxRadius * (value/100);
         $('#marches-radius-range-label').text(Math.floor(marchesCurrRadius))
         updateMarchesRadius();
       }
