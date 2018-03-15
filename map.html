@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="The intersection of the #NeverAgain movement and college admissions.">
+<meta name="author" content="Alex Garcia">
+<title>Map | #NeverAgain Colleges</title>
+<meta property="og:title" content="#NeverAgain Colleges" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="http://www.neveragaincolleges.com" />
+<meta property="og:image" content="http://www.neveragaincolleges.com/neveragain.png" />
+<script src="js/handlebars.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.css" integrity="sha256-/mC8AIsSmTcTtaf8vgnfbZXZLYhJCd0b9If/M0Y5nDw=" crossorigin="anonymous" />
+
+<link rel="shortcut icon" type="image/png" href="neveragain.ico"/>
+
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
+   integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
+   crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"
+   integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
+   crossorigin=""></script>
+<script src="js/semantic.min.js"></script>
+<script src="https://cdn.rawgit.com/tyleryasaka/semantic-ui-range/master/range.js"></script>
+<link rel="stylesheet" href="https://cdn.rawgit.com/tyleryasaka/semantic-ui-range/master/range.css"></link>
+<script id="marches-popup-template" type="text/x-handlebars-template">
+  <div class="ui segment" style="text-align:center;">
+  <h3>{{ title }}</h3>
+  <p>{{venue}}</p>
+  <a class="ui label" href="{{ url }}" target="_blank">Link to Details</a>
+</div>
+</script>
+<script id="popup-template" type="text/x-handlebars-template">
+  <div class="ui segment" style="text-align:center;">
+  <h3>{{ name }}</h3>
+  <p>{{ size }} students<p>
+  {{#if score_is_0}}
+    <div class="ui red label">None</div>
+  {{/if}}
+  {{#if score_is_1}}
+  <div class="ui yellow label">Insufficient</div>
+  {{/if}}
+  {{#if score_is_2}}
+  <div class="ui green label">Confirmed</div>
+  {{/if}}
+  {{#if link }}
+    <br>
+    <a href="{{link}}" target="_blank" >Statement</a>
+  {{/if}}
+  <img style="width:80%" src="{{ photo}}"></img>
+</div>
+</script>
+
+<script>
+  var map;
+  var largestSize = -1;
+  
+  var maxRadius = 300000;
+  var currRadius = 200000;
+  
+  var marchesMaxRadius = 20000;
+  var marchesCurrRadius = 4500;
+  
+  
+    function getMarchesRadius() {
+      return marchesCurrRadius;
+    }
+    function getRadius(college, sameSize) {
+      
+      var area = college.size / largestSize;
+      
+      if(sameSize) {
+        return currRadius;
+      }
+      if(college.size) {
+        return Math.sqrt((area/Math.PI)) * currRadius;
+      }
+      else
+        return currRadius/4;
+    }
+    function get314Marches(cb) {
+      $.get('/data/marches.json', function(marches) {
+        cb(marches);
+      });
+    }
+    function getCollegeList(cb) {
+
+    var url = 'https://spreadsheets.google.com/feeds/cells/1J2R1ABpUoFSC3USeOOv5kpmyA7Ilw1D3aFinc1pW0yg/3/public/values?range=A3:R450&alt=json';
+    var d;
+  
+    $.get('/data/columns.json', function(columns) {
+      
+      colleges_columns = columns;
+      
+      $.get(url, function(err, status, data) {
+        
+        var entries = data.responseJSON.feed.entry;
+        var colleges = {};
+  
+        for(var i = 0; i < entries.length; i++){
+        	var e_row = entries[i].gs$cell.row;
+        	var e_col = entries[i].gs$cell.col;
+        	if(!colleges[e_row]) {
+        		colleges[e_row] = {};
+            }
+        	colleges[e_row][colleges_columns[e_col]] = entries[i].gs$cell.$t;
+        }
+  
+        var c = {};
+  
+        for(var col in colleges) {
+          c[colleges[col].id] = colleges[col];
+        }
+        //colleges = c;
+        colleges = cleanColleges(c);
+        cb(null, c);
+      });
+      
+      
+    });
+
+  }
+
+  function cleanColleges(cols) {
+
+
+    for(var c in cols) {
+      var col = cols[c];
+
+      col.alias = (col.alias) ? col.alias.split(',') : undefined;
+      col.hasConfirm = col.hasConfirm === 'TRUE';
+      if(col.location){
+        var loc = JSON.parse(col.location);
+        col.lon = loc.lon;
+        col.lat = loc.lat;
+      }
+      
+      col.score_is_0 = col.score == 0;
+      col.score_is_1 = col.score == 1;
+      col.score_is_2 = col.score == 2;
+      if(!col.name)
+        col = undefined;
+
+      cols[c] = col;
+    }
+
+    return cols;
+  }
+  var circles = [];
+  var marchesCircles = [];
+  
+  function updateRadius() {
+    for(var i = 0; i < circles.length; i++) {
+      circles[i].setRadius(getRadius(circles[i]._me_data, !$('#radius-size-toggle').checkbox('is checked')));
+    }
+  }
+  
+  function updateMarchesRadius() {
+    for(var i = 0; i < marchesCircles.length; i++) {
+      marchesCircles[i].setRadius(getMarchesRadius(marchesCircles[i]._me_data));
+    }
+  }
+  
+  $(document).ready(function(){
+    $('#radius-range-label').text(Math.floor(currRadius))
+    $('#marches-radius-range-label').text(Math.floor(marchesCurrRadius))
+  
+    $('#radius-size-toggle').checkbox({
+      onChecked: function(){
+        for(var i = 0; i < circles.length; i++) {
+        	circles[i].setRadius(getRadius(circles[i]._me_data, false));
+        }
+      },
+      
+      onUnchecked: function() {
+        for(var i = 0; i < circles.length; i++) {
+          circles[i].setRadius(getRadius(circles[i]._me_data, true));
+        }
+      }
+    }).checkbox('check')
+    
+    
+    $('#show-confirm').checkbox({
+      onChecked: function() {
+        for(var i = 0; i < circles.length; i++) {
+        	if(circles[i]._me_data.score == "2") {
+        	  circles[i].addTo(map);
+        	}
+        }
+      },
+      onUnchecked: function() {
+        for(var i = 0; i < circles.length; i++) {
+        	if(circles[i]._me_data.score == "2") {
+        	  circles[i].removeFrom(map);
+        	}
+        }
+      }
+    });
+    $('#show-insuff').checkbox({
+      onChecked: function() {
+        for(var i = 0; i < circles.length; i++) {
+        	if(circles[i]._me_data.score == "1") {
+        	  circles[i].addTo(map);
+        	}
+        }
+      },
+      onUnchecked: function() {
+        for(var i = 0; i < circles.length; i++) {
+        	if(circles[i]._me_data.score == "1") {
+        	  circles[i].removeFrom(map);
+        	}
+        }
+      }
+    });
+    $('#show-none').checkbox({
+      onChecked: function() {
+        for(var i = 0; i < circles.length; i++) {
+        	if(circles[i]._me_data.score == "0") {
+        	  circles[i].addTo(map);
+        	}
+        }
+      },
+      onUnchecked: function() {
+        for(var i = 0; i < circles.length; i++) {
+        	if(circles[i]._me_data.score == "0") {
+        	  circles[i].removeFrom(map);
+        	}
+        }
+      }
+    });
+    
+    $('#show-marches').checkbox({
+      onChecked: function() {
+        for(var i = 0; i < marchesCircles.length; i++) {
+        	  marchesCircles[i].addTo(map);
+        }
+      },
+      onUnchecked: function() {
+        for(var i = 0; i < marchesCircles.length; i++) {
+        	  marchesCircles[i].removeFrom(map);
+        }
+      }
+    });
+    
+    var rangeStart = 80;
+    $('#radius-range').range({
+      min: 1,
+      max: 100,
+      start: rangeStart,
+      onChange: function(value) {
+        currRadius = maxRadius * (value/100);
+        $('#radius-range-label').text(Math.floor(currRadius))
+        updateRadius();
+      }
+    });
+    var marchesRadiusStart = 3;
+    $('#marches-radius-range').range({
+      min: 1,
+      max: 10,
+      start: marchesRadiusStart,
+      onChange: function(value) {
+        marchesCurrRadius = marchesMaxRadius * (value/10);
+        $('#marches-radius-range-label').text(Math.floor(marchesCurrRadius))
+        updateMarchesRadius();
+      }
+    });
+    
+  });
+  
+  
+  $(document).ready(function(){
+    
+  map = L.map('mapid').setView([38.702249038932734, -102.56467401981355], 4);
+    
+    
+    
+    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+    maxZoom: 18,
+    id: 'mapbox.streets',
+    accessToken: 'pk.eyJ1IjoiYXNnMDE3IiwiYSI6ImNqZXMzODR2ZjV1aXIzOW83Y2RzZHdrYXIifQ.yXzvWqHZJTXJioX0VAVhVw'
+  }).addTo(map);
+  
+  
+  
+  var marchesPopupTemplate = Handlebars.compile($('#marches-popup-template').html());
+  var popupTemplate = Handlebars.compile($('#popup-template').html());
+  function scoreColor(score, fill) {
+    score = parseInt(score)
+    switch(score) {
+      case 0:
+        return (!fill) ? 'red' : 'crimson';
+        
+      case 1:
+        return (!fill) ? 'gold' : 'yellow';
+        
+      case 2:
+        return (!fill) ? 'darkgreen' : 'seagreen';
+    }
+  }
+  get314Marches(function(marches) {
+    for(var i = 0; i < marches.length; i++) {
+      
+        var marchesCircle = L.circle([marches[i].lat, marches[i].long], {
+          color: '#f1615c',
+          fillColor: '#FF948F',
+          fillOpacity: 0.7,
+          radius: getMarchesRadius(),
+        })
+          .addTo(map)
+          .bindPopup(marchesPopupTemplate(marches[i]))
+          .bringToBack()
+          //.openPopup();
+        
+        marchesCircle._me_data = marches[i];
+        marchesCircles.push(marchesCircle);
+        
+      
+     }
+  });
+  
+  getCollegeList(function(err, colleges) {
+    var c = [];
+    for(var col in colleges) {
+      c.push(colleges[col]);
+    }
+    
+    colleges = c;
+    
+    
+    for(var i = 0; i < colleges.length; i++) {
+      if(colleges[i]) {
+        if(parseInt(colleges[i].size) > largestSize)
+          largestSize = parseInt(colleges[i].size);
+      }
+    }
+    
+    
+    
+    for(var i = 0; i < colleges.length; i++) {
+      
+      if(colleges[i] && colleges[i].lon) {
+        var circle = L.circle([colleges[i].lat, colleges[i].lon], {
+          color: scoreColor(colleges[i].score),
+          fillColor: scoreColor(colleges[i].score, true),
+          fillOpacity: 0.5,
+          radius: getRadius(colleges[i]),
+        })
+          .addTo(map)
+          .bindPopup(popupTemplate(colleges[i]))
+          //.openPopup();
+        
+        circle._me_data = colleges[i];
+        circles.push(circle);
+        
+      }
+     }
+     
+     $('#show-none').checkbox('uncheck')
+     
+     
+   });
+
+    
+  });
+
+</script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114686953-1"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', 'UA-114686953-1');
+</script>
+</head>
+<body>
+  <div style="padding-top: 2em; padding-left: 2em; padding-right: 2em;" class="content">
+    
+    <h1>#NeverAgain Colleges - Map</h1>
+    <div class="ui mobile reversed stackable grid">
+      <div class="ui  row">
+        <div class="twelve wide column">
+          <div class="ui segment">
+           <div style="width:100%; height:100vh;" id="mapid"></div>
+           </div>
+        </div>
+        <div class="four wide column">
+          <!-- Legend -->
+          <div class="ui segment">
+            <h3 class="ui center aligned header">Legend</h3>
+            <div class="ui grid">
+              <div class="ui sixteen wide column">
+                <svg height="120" width="300">
+                  <circle cx="50" cy="20" r="15" fill-opacity="0.6" stroke="darkgreen" stroke-width="2" fill="seagreen" />
+                  <circle cx="50" cy="53" r="15" fill-opacity="0.6" stroke="gold" stroke-width="2" fill="yellow" />
+                  <circle cx="50" cy="86" r="15" fill-opacity="0.6" stroke="red" stroke-width="2" fill="crimson" />
+                  <circle cx="50" cy="113" r="5" fill-opacity="0.6" stroke="#FF948F" stroke-width="2" fill="#f1615c" />
+                  
+                  <text x="75" y="22" font-family="Lato,'Helvetica Neue',Arial,Helvetica,sans-serif" font-size="11">College with Confirmed Statement</text>
+                  <text x="75" y="55" font-family="Lato,'Helvetica Neue',Arial,Helvetica,sans-serif" font-size="11">College with Insufficient Statement</text>
+                  <text x="75" y="88" font-family="Lato,'Helvetica Neue',Arial,Helvetica,sans-serif" font-size="11">College with No Statement</text>
+                  <text x="75" y="115" font-family="Lato,'Helvetica Neue',Arial,Helvetica,sans-serif" font-size="11">Location of #Enough Walkout</text>
+                  
+                </svg>    
+              </div>
+              
+            </div>
+            
+          </div>
+            
+            
+                  
+          <!-- #NeverAgain Colleges -->
+          <div class="ui segment">
+            
+
+            <h3 class="ui center aligned header">#NeverAgain Colleges</h3>
+            <!-- size -->
+            <div id="radius-size-toggle" class="ui toggle checked checkbox">
+              <input type="checkbox" name="radius-size">
+              <label>Radius by college size?</label>
+            </div>
+            <!-- radius -->
+            <div style="text-align:center;" class="ui segment">
+              
+              <div id="radius-range" class="ui range">
+              </div>
+              <p>Radius: <span id="radius-range-label"></span> Meters</p>
+            </div>
+            
+            <br>
+            
+            <!-- statements -->
+            <div id="show-confirm" class="ui checked checkbox">
+              <input type="checkbox" checked="">
+              <label>Show Confirmed Statements <i class="ui green check icon"></i></label>
+            </div>
+            <div id="show-insuff" class="ui checked checkbox">
+              <input type="checkbox" checked="">
+              <label>Show Insufficient Statements <i class="ui yellow question icon"></i></label>
+            </div>
+            <div id="show-none" class="ui checkbox">
+              <input type="checkbox" checked="">
+              <label>Show No Statements <i class="ui red times icon"></i></label>
+            </div>
+            
+          </div>
+          
+          <!-- 3/14 Walkout -->
+          <div class="ui segment">
+            <h3 class="ui center aligned header">3/14/18 Walkout</h3>
+            <!-- radius -->
+            <div style="text-align:center;" class="ui segment">
+              
+              <div id="marches-radius-range" class="ui range">
+              </div>
+              <p>Radius: <span id="marches-radius-range-label"></span> Meters</p>
+            </div>
+            
+            <div id="show-marches" class="ui checked checkbox">
+              <input type="checkbox" checked="">
+              <label>Show Walkout Locations <i style="color:#f1615c;" class="ui users icon"></i></label>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  </div>
+ 
+</body>
+</html>
